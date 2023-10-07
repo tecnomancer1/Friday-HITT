@@ -9,8 +9,16 @@ Parameters:
     AllowedValues:
       - t2.micro
       - t2.small
-      - t2.medium
     ConstraintDescription: Must be a valid EC2 instance type.
+
+  DBInstanceType:
+    Description: RDS instance type
+    Type: String
+    Default: db.t2.micro
+    AllowedValues:
+      - db.t2.micro
+      - db.t2.small
+    ConstraintDescription: Must be a valid RDS instance type.
 
 Resources:
   VPC:
@@ -87,10 +95,10 @@ Resources:
       SecurityGroupIngress:
         - CidrIp: "10.0.0.0/16"  # Allow traffic from the VPC
           IpProtocol: tcp
-          FromPort: 3306  # MySQL used
+          FromPort: 3306  # MySQL port
           ToPort: 3306
 
-  WebServer:
+  WebServer1:
     Type: AWS::EC2::Instance
     Properties:
       InstanceType:
@@ -106,27 +114,42 @@ Resources:
           #!/bin/bash
           # Install and configure web server here
 
-  DatabaseServer:
+  WebServer2:
     Type: AWS::EC2::Instance
     Properties:
       InstanceType:
         Ref: InstanceType
       SecurityGroups:
-        - !Ref DatabaseSecurityGroup
+        - !Ref WebSecurityGroup
       SubnetId:
-        Ref: PrivateSubnet1
+        Ref: PublicSubnet2
       KeyName: key-pair-name
-      ImageId: database-ami-id
+      ImageId: ami-id
       UserData:
         Fn::Base64: !Sub |
           #!/bin/bash
-          # Install and configure database software here
+          # Install and configure web server here
+
+  DatabaseServer:
+    Type: AWS::RDS::DBInstance
+    Properties:
+      AllocatedStorage: 20  # Modify as needed
+      DBInstanceClass:
+        Ref: DBInstanceType
+      Engine: mysql
+      EngineVersion: "5.7"
+      MasterUsername: db-username
+      MasterUserPassword: db-password
+      DBSubnetGroupName:
+        Fn::Sub: FridayHITTDBSubnetGroup
+      VPCSecurityGroups:
+        - !Ref DatabaseSecurityGroup
 
 Outputs:
-  WebServerPublicIP:
-    Description: Public IP address of the web server
-    Value: !GetAtt WebServer.PublicIp
+  WebServer1PublicIP:
+    Description: Public IP address of WebServer1
+    Value: !GetAtt WebServer1.PublicIp
 
-  DatabaseServerPrivateIP:
-    Description: Private IP address of the database server
-    Value: !GetAtt DatabaseServer.PrivateIp
+  WebServer2PublicIP:
+    Description: Public IP address of WebServer2
+    Value: !GetAtt WebServer2.PublicIp

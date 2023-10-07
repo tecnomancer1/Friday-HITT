@@ -29,10 +29,14 @@ Resources:
       EnableDnsHostnames: true
       Tags:
         - Key: Name
-          Value: FridayHITTVPC
+          Value: FridayHITT
 
   InternetGateway:
     Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+        - Key: Name
+          Value: FridayHITT
 
   AttachGateway:
     Type: AWS::EC2::VPCGatewayAttachment
@@ -49,6 +53,9 @@ Resources:
         Ref: VPC
       CidrBlock: "10.0.0.0/24"
       AvailabilityZone: !Select [0, !GetAZs '']
+      Tags:
+        - Key: Name
+          Value: FridayHITT
 
   PublicSubnet2:
     Type: AWS::EC2::Subnet
@@ -57,6 +64,9 @@ Resources:
         Ref: VPC
       CidrBlock: "10.0.1.0/24"
       AvailabilityZone: !Select [1, !GetAZs '']
+      Tags:
+        - Key: Name
+          Value: FridayHITT
 
   PrivateSubnet1:
     Type: AWS::EC2::Subnet
@@ -65,6 +75,9 @@ Resources:
         Ref: VPC
       CidrBlock: "10.0.2.0/24"
       AvailabilityZone: !Select [0, !GetAZs '']
+      Tags:
+        - Key: Name
+          Value: FridayHITT
 
   PrivateSubnet2:
     Type: AWS::EC2::Subnet
@@ -73,6 +86,9 @@ Resources:
         Ref: VPC
       CidrBlock: "10.0.3.0/24"
       AvailabilityZone: !Select [1, !GetAZs '']
+      Tags:
+        - Key: Name
+          Value: FridayHITT
 
   WebSecurityGroup:
     Type: AWS::EC2::SecurityGroup
@@ -85,6 +101,9 @@ Resources:
           IpProtocol: tcp
           FromPort: 80
           ToPort: 80
+      Tags:
+        - Key: Name
+          Value: FridayHITT
 
   DatabaseSecurityGroup:
     Type: AWS::EC2::SecurityGroup
@@ -97,6 +116,9 @@ Resources:
           IpProtocol: tcp
           FromPort: 3306  # MySQL port
           ToPort: 3306
+      Tags:
+        - Key: Name
+          Value: FridayHITT
 
   WebServer1:
     Type: AWS::EC2::Instance
@@ -109,10 +131,18 @@ Resources:
         Ref: PublicSubnet1
       KeyName: key-pair-name
       ImageId: ami-id
+      Tags:
+        - Key: Name
+          Value: FridayHITT
       UserData:
         Fn::Base64: !Sub |
           #!/bin/bash
           # Install and configure web server here
+          yum update -y
+          yum install -y httpd
+          systemctl start httpd
+          systemctl enable httpd
+          echo "<html><h1>Hello, FridayHITT!</h1></html>" > /var/www/html/index.html
 
   WebServer2:
     Type: AWS::EC2::Instance
@@ -125,10 +155,18 @@ Resources:
         Ref: PublicSubnet2
       KeyName: key-pair-name
       ImageId: ami-id
+      Tags:
+        - Key: Name
+          Value: FridayHITT
       UserData:
         Fn::Base64: !Sub |
           #!/bash/bin
           # Install and configure web server here
+          yum update -y
+          yum install -y httpd
+          systemctl start httpd
+          systemctl enable httpd
+          echo "<html><h1>Hello, FridayHITT!</h1></html>" > /var/www/html/index.html
 
   DatabaseServer:
     Type: AWS::RDS::DBInstance
@@ -144,18 +182,27 @@ Resources:
         Fn::Sub: FridayHITTDBSubnetGroup
       VPCSecurityGroups:
         - !Ref DatabaseSecurityGroup
+      Tags:
+        - Key: Name
+          Value: FridayHITT
 
   PublicRouteTable:
     Type: AWS::EC2::RouteTable
     Properties:
       VpcId:
         Ref: VPC
+      Tags:
+        - Key: Name
+          Value: FridayHITT
 
   PrivateRouteTable:
     Type: AWS::EC2::RouteTable
     Properties:
       VpcId:
         Ref: VPC
+      Tags:
+        - Key: Name
+          Value: FridayHITT
 
   PublicRoute:
     Type: AWS::EC2::Route
@@ -166,6 +213,9 @@ Resources:
       DestinationCidrBlock: "0.0.0.0/0"
       GatewayId:
         Ref: InternetGateway
+      Tags:
+        - Key: Name
+          Value: FridayHITT
 
   PrivateRoute1:
     Type: AWS::EC2::Route
@@ -173,8 +223,10 @@ Resources:
       RouteTableId:
         Ref: PrivateRouteTable
       DestinationCidrBlock: "10.0.0.0/16"  # Route traffic to the VPC
-      VpcPeeringConnectionId:
-        Ref: VPCPeeringConnection
+      Tags:
+        - Key: Name
+          Value: FridayHITT
+
 
   PrivateRoute2:
     Type: AWS::EC2::Route
@@ -183,6 +235,9 @@ Resources:
         Ref: PrivateRouteTable
       DestinationCidrBlock: "0.0.0.0/0"
       NatGatewayId: nat-gateway-id  # Replace with Nat Gateway ID
+      Tags:
+        - Key: Name
+          Value: FridayHITT
 
 Outputs:
   WebServer1PublicIP:

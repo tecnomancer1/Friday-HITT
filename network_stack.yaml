@@ -20,7 +20,18 @@ Parameters:
   LatestAmiId:
     Type: 'AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>'
     Default: /aws/service/ami-amazon-linux-latest/amzn2-ami-minimal-hvm-x86_64-ebs
+  NewKeyPairName:
+    Description: Name of a new EC2 key pair to create
+    Type: String
+    Default: my-new-key-pair
 Resources:
+  MyNewKeyPair:
+    Type: 'AWS::EC2::KeyPair'
+    Properties:
+      KeyName: !Ref NewKeyPairName
+      Tags:
+        - Key: Name
+          Value: FridayHITT
   VPC:
     Type: 'AWS::EC2::VPC'
     Properties:
@@ -112,6 +123,14 @@ Resources:
     Metadata:
       'AWS::CloudFormation::Designer':
         id: 4a93252c-108b-4b4f-8992-220baebd247d
+  DBSubnetGroup:  # DBSubnetGroup resource
+    Type: AWS::RDS::DBSubnetGroup
+    Properties:
+      DBSubnetGroupName: FridayHITTDBSubnetGroup
+      DBSubnetGroupDescription: Subnet group for RDS
+      SubnetIds:
+        - Ref: PrivateSubnet1
+        - Ref: PrivateSubnet2
   WebSecurityGroup:
     Type: 'AWS::EC2::SecurityGroup'
     Properties:
@@ -155,7 +174,7 @@ Resources:
         - !GetAtt WebSecurityGroup.GroupId
       SubnetId:
         Ref: PublicSubnet1
-      KeyName: key-pair-name
+      KeyName: my-new-key-pair
       ImageId: !Ref LatestAmiId
       Tags:
         - Key: Name
@@ -188,7 +207,7 @@ Resources:
         - !GetAtt WebSecurityGroup.GroupId
       SubnetId:
         Ref: PublicSubnet2
-      KeyName: key-pair-name
+      KeyName: my-new-key-pair
       ImageId: !Ref LatestAmiId
       Tags:
         - Key: Name
@@ -220,8 +239,8 @@ Resources:
         Ref: DBInstanceType
       Engine: mysql
       EngineVersion: '5.7'
-      MasterUsername: db-username
-      MasterUserPassword: db-password
+      MasterUsername: dbusername
+      MasterUserPassword: dbpassword
       DBSubnetGroupName:
         'Fn::Sub': FridayHITTDBSubnetGroup
       VPCSecurityGroups:

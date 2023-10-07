@@ -127,7 +127,7 @@ Resources:
       ImageId: ami-id
       UserData:
         Fn::Base64: !Sub |
-          #!/bin/bash
+          #!/bash/bin
           # Install and configure web server here
 
   DatabaseServer:
@@ -145,6 +145,45 @@ Resources:
       VPCSecurityGroups:
         - !Ref DatabaseSecurityGroup
 
+  PublicRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId:
+        Ref: VPC
+
+  PrivateRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId:
+        Ref: VPC
+
+  PublicRoute:
+    Type: AWS::EC2::Route
+    DependsOn: AttachGateway
+    Properties:
+      RouteTableId:
+        Ref: PublicRouteTable
+      DestinationCidrBlock: "0.0.0.0/0"
+      GatewayId:
+        Ref: InternetGateway
+
+  PrivateRoute1:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId:
+        Ref: PrivateRouteTable
+      DestinationCidrBlock: "10.0.0.0/16"  # Route traffic to the VPC
+      VpcPeeringConnectionId:
+        Ref: VPCPeeringConnection
+
+  PrivateRoute2:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId:
+        Ref: PrivateRouteTable
+      DestinationCidrBlock: "0.0.0.0/0"
+      NatGatewayId: nat-gateway-id  # Replace with Nat Gateway ID
+
 Outputs:
   WebServer1PublicIP:
     Description: Public IP address of WebServer1
@@ -153,3 +192,4 @@ Outputs:
   WebServer2PublicIP:
     Description: Public IP address of WebServer2
     Value: !GetAtt WebServer2.PublicIp
+

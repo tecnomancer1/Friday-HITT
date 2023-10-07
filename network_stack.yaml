@@ -50,6 +50,22 @@ Resources:
       CidrBlock: "10.0.1.0/24"
       AvailabilityZone: !Select [1, !GetAZs '']
 
+  PrivateSubnet1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId:
+        Ref: VPC
+      CidrBlock: "10.0.2.0/24"
+      AvailabilityZone: !Select [0, !GetAZs '']
+
+  PrivateSubnet2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId:
+        Ref: VPC
+      CidrBlock: "10.0.3.0/24"
+      AvailabilityZone: !Select [1, !GetAZs '']
+
   WebSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
@@ -61,6 +77,18 @@ Resources:
           IpProtocol: tcp
           FromPort: 80
           ToPort: 80
+
+  DatabaseSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Security group for the database server
+      VpcId:
+        Ref: VPC
+      SecurityGroupIngress:
+        - CidrIp: "10.0.0.0/16"  # Allow traffic from the VPC
+          IpProtocol: tcp
+          FromPort: 3306  # MySQL used
+          ToPort: 3306
 
   WebServer:
     Type: AWS::EC2::Instance
@@ -78,55 +106,27 @@ Resources:
           #!/bin/bash
           # Install and configure web server here
 
-  LoadBalancer:
-    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+  DatabaseServer:
+    Type: AWS::EC2::Instance
     Properties:
-      Name: FridayHITTLoadBalancer
-      Subnets:
-        - Ref: PublicSubnet1
-        - Ref: PublicSubnet2
-      Scheme: internet-facing
+      InstanceType:
+        Ref: InstanceType
       SecurityGroups:
-        - !Ref WebSecurityGroup
-      LoadBalancerAttributes:
-        - Key: idle_timeout.timeout_seconds
-          Value: '60'
-
-  TargetGroup:
-    Type: AWS::ElasticLoadBalancingV2::TargetGroup
-    Properties:
-      Name: FridayHITTTargetGroup
-      Port: 80
-      Protocol: HTTP
-      VpcId:
-        Ref: VPC
-      TargetType: instance
-      HealthCheckEnabled: true
-      HealthCheckIntervalSeconds: 30
-      HealthCheckPath: "/"
-      HealthCheckPort: 80
-
-  Listener:
-    Type: AWS::ElasticLoadBalancingV2::Listener
-    Properties:
-      DefaultActions:
-        - Type: fixed-response
-          FixedResponseConfig:
-            StatusCode: "200"
-            ContentType: "text/plain"
-            ContentType: "Hello, FridayHITT!"
-      LoadBalancerArn:
-        Ref: LoadBalancer
-      Port: 80
-      Protocol: HTTP
-      DefaultActions:
-        - Type: fixed-response
-          FixedResponseConfig:
-            StatusCode: '200'
-            ContentType: 'text/plain'
-            Content: 'Hello, FridayHITT!'
+        - !Ref DatabaseSecurityGroup
+      SubnetId:
+        Ref: PrivateSubnet1
+      KeyName: key-pair-name
+      ImageId: database-ami-id
+      UserData:
+        Fn::Base64: !Sub |
+          #!/bin/bash
+          # Install and configure database software here
 
 Outputs:
-  LoadBalancerDNSName:
-    Description: DNS name of the load balancer
-    Value: !GetAtt LoadBalancer.DNSName
+  WebServerPublicIP:
+    Description: Public IP address of the web server
+    Value: !GetAtt WebServer.PublicIp
+
+  DatabaseServerPrivateIP:
+    Description: Private IP address of the database server
+    Value: !GetAtt DatabaseServer.PrivateIp

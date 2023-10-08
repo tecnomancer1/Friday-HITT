@@ -1,6 +1,5 @@
 AWSTemplateFormatVersion: 2010-09-09
 Description: FridayHITT Network Stack
-
 Parameters:
   InstanceType:
     Description: EC2 instance type
@@ -9,8 +8,7 @@ Parameters:
     AllowedValues:
       - t2.micro
       - t2.small
-    ConstraintDescription: Must be a valid EC2 instance type
-
+    ConstraintDescription: Must be a valid EC2 instance type.
   DBInstanceType:
     Description: RDS instance type
     Type: String
@@ -18,17 +16,14 @@ Parameters:
     AllowedValues:
       - db.t2.micro
       - db.t2.small
-    ConstraintDescription: Must be a valid RDS instance type
-
+    ConstraintDescription: Must be a valid RDS instance type.
   LatestAmiId:
     Type: 'AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>'
     Default: /aws/service/ami-amazon-linux-latest/amzn2-ami-minimal-hvm-x86_64-ebs
-
   NewKeyPairName:
     Description: Name of a new EC2 key pair to create
     Type: String
     Default: my-new-key-pair
-
 Resources:
   MyNewKeyPair:
     Type: 'AWS::EC2::KeyPair'
@@ -37,7 +32,9 @@ Resources:
       Tags:
         - Key: Name
           Value: FridayHITT
-
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: 5d8566e1-4124-41c4-bd04-91688c42d0d6
   VPC:
     Type: 'AWS::EC2::VPC'
     Properties:
@@ -47,14 +44,18 @@ Resources:
       Tags:
         - Key: Name
           Value: FridayHITT
-
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: f698a220-9e60-4b03-a59f-54872f53f679
   InternetGateway:
     Type: 'AWS::EC2::InternetGateway'
     Properties:
       Tags:
         - Key: Name
           Value: FridayHITT
-
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: 497793d4-7f02-4707-a1b0-28162bcfe403
   AttachGateway:
     Type: 'AWS::EC2::VPCGatewayAttachment'
     Properties:
@@ -62,59 +63,55 @@ Resources:
         Ref: VPC
       InternetGatewayId:
         Ref: InternetGateway
-
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: 7d5e8ef8-32de-4878-beb6-6a96cb07b45e
   PublicSubnet1:
     Type: 'AWS::EC2::Subnet'
     Properties:
       VpcId:
         Ref: VPC
       CidrBlock: 10.0.0.0/24
-      AvailabilityZone: !Select
-        - 0
-        - !GetAZs ''
+      AvailabilityZone: eu-west-1a
       Tags:
         - Key: Name
           Value: FridayHITT
-
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: 3fbb3111-fb9c-4c63-9a79-4c3ec2d6744e
   PublicSubnet2:
     Type: 'AWS::EC2::Subnet'
     Properties:
       VpcId:
         Ref: VPC
       CidrBlock: 10.0.1.0/24
-      AvailabilityZone: !Select
-        - 1
-        - !GetAZs ''
+      AvailabilityZone: eu-west-1b
       Tags:
         - Key: Name
           Value: FridayHITT
-
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: b80ae5e6-5388-4b8c-ac8a-ae20f8265e56
   PrivateSubnet1:
     Type: 'AWS::EC2::Subnet'
     Properties:
       VpcId:
         Ref: VPC
       CidrBlock: 10.0.2.0/24
-      AvailabilityZone: !Select
-        - 0
-        - !GetAZs ''
-      Tags:
-        - Key: Name
-          Value: FridayHITT
-
+      AvailabilityZone: eu-west-1a
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: 96cd2065-993c-4a26-9ce0-259ae67d9f39
   PrivateSubnet2:
     Type: 'AWS::EC2::Subnet'
     Properties:
       VpcId:
         Ref: VPC
       CidrBlock: 10.0.3.0/24
-      AvailabilityZone: !Select
-        - 1
-        - !GetAZs ''
-      Tags:
-        - Key: Name
-          Value: FridayHITT
-
+      AvailabilityZone: eu-west-1b
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: 4a93252c-108b-4b4f-8992-220baebd247d
   DBSubnetGroup:
     Type: 'AWS::RDS::DBSubnetGroup'
     Properties:
@@ -123,7 +120,9 @@ Resources:
       SubnetIds:
         - Ref: PrivateSubnet1
         - Ref: PrivateSubnet2
-
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: d53149ba-2d63-4e9d-9901-586753a8e802
   WebSecurityGroup:
     Type: 'AWS::EC2::SecurityGroup'
     Properties:
@@ -138,7 +137,9 @@ Resources:
       Tags:
         - Key: Name
           Value: FridayHITT
-
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: 3050f62f-d98e-47ab-8cfe-0db6a2ef4928
   DatabaseSecurityGroup:
     Type: 'AWS::EC2::SecurityGroup'
     Properties:
@@ -153,111 +154,167 @@ Resources:
       Tags:
         - Key: Name
           Value: FridayHITT
-
-  JumpboxSecurityGroup:
-    Type: 'AWS::EC2::SecurityGroup'
-    Properties:
-      GroupDescription: Security group for the jumpbox server
-      VpcId:
-        Ref: VPC
-      SecurityGroupIngress:
-        - CidrIp: 84.203.114.144
-          IpProtocol: tcp
-          FromPort: 22
-          ToPort: 22
-      Tags:
-        - Key: Name
-          Value: FridayHITT-JumpboxSecurityGroup
-
-  Jumpbox:
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: 9899a1e0-1c99-4135-bec5-d9a20ea1bca1
+  WebServer1:
     Type: 'AWS::EC2::Instance'
     Properties:
-      InstanceType: !Ref InstanceType
+      InstanceType:
+        Ref: InstanceType
       SecurityGroupIds:
-        - !GetAtt JumpboxSecurityGroup.GroupId
-      SubnetId: !Ref PublicSubnet1
-      KeyName: !Ref NewKeyPairName
-      ImageId: !Ref LatestAmiId
-      Tags:
-        - Key: Name
-          Value: FridayHITT-Jumpbox
-      UserData:
-        'Fn::Base64': !Sub |
-          #!/bin/bash
-          # Install and configure jumpbox here
-          yum update -y
-          # Add any additional setup or configuration as needed
-
-  DatabaseServer1:
-    Type: 'AWS::RDS::DBInstance'
-    Properties:
-      AllocatedStorage: 20
-      DBInstanceClass: !Ref DBInstanceType
-      Engine: mysql
-      EngineVersion: '5.7'
-      MasterUsername: dbusername1
-      MasterUserPassword: dbpassword1
-      DBSubnetGroupName: !Ref DBSubnetGroup
-      VPCSecurityGroups:
-        - !Ref DatabaseSecurityGroup
-      Tags:
-        - Key: Name
-          Value: FridayHITT-DBServer1
-
-  DatabaseServer2:
-    Type: 'AWS::RDS::DBInstance'
-    Properties:
-      AllocatedStorage: 20
-      DBInstanceClass: !Ref DBInstanceType
-      Engine: mysql
-      EngineVersion: '5.7'
-      MasterUsername: dbusername2
-      MasterUserPassword: dbpassword2
-      DBSubnetGroupName: !Ref DBSubnetGroup
-      VPCSecurityGroups:
-        - !Ref DatabaseSecurityGroup
-      Tags:
-        - Key: Name
-          Value: FridayHITT-DBServer2
-
-  WebServerLaunchConfiguration:
-    Type: 'AWS::AutoScaling::LaunchConfiguration'
-    Properties:
-      ImageId: !Ref LatestAmiId
-      InstanceType: !Ref InstanceType
-      SecurityGroups:
         - !GetAtt WebSecurityGroup.GroupId
-      KeyName: !Ref NewKeyPairName
-      UserData:
-        'Fn::Base64': !Sub |
-          #!/bin/bash
-          # Install and configure web server here
-          yum update -y
-          yum install -y httpd
-          systemctl start httpd
-          systemctl enable httpd
-          echo "<html><h1>Hello, FridayHITT WebServer!</h1></html>" > /var/www/html/index.html
-      AssociatePublicIpAddress: true
-
-  WebServerAutoScalingGroup:
-    Type: 'AWS::AutoScaling::AutoScalingGroup'
-    Properties:
-      LaunchConfigurationName: !Ref WebServerLaunchConfiguration
-      MinSize: 2 # Minimum number of instances
-      MaxSize: 4 # Maximum number of instances
-      DesiredCapacity: 2 # Initial number of instances
-      VPCZoneIdentifier:
-        - !Ref PublicSubnet1
-        - !Ref PublicSubnet2
+      SubnetId:
+        Ref: PublicSubnet1
+      KeyName: my-new-key-pair
+      ImageId: !Ref LatestAmiId
       Tags:
         - Key: Name
-          Value: FridayHITT-WebServer
-      AvailabilityZones:
-        - !Select
-          - 0
-          - !GetAZs ''
-        - !Select
-          - 1
-          - !GetAZs ''
+          Value: FridayHITT
+      UserData:
+        'Fn::Base64': !Sub >
+          #!/bin/bash
 
+          # Install and configure web server here
 
+          yum update -y
+
+          yum install -y httpd
+
+          systemctl start httpd
+
+          systemctl enable httpd
+
+          echo "<html><h1>Hello, FridayHITT!</h1></html>" >
+          /var/www/html/index.html
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: a797145e-1008-48f1-9004-f0f9e9e6d401
+  WebServer2:
+    Type: 'AWS::EC2::Instance'
+    Properties:
+      InstanceType:
+        Ref: InstanceType
+      SecurityGroupIds:
+        - !GetAtt WebSecurityGroup.GroupId
+      SubnetId:
+        Ref: PublicSubnet2
+      KeyName: my-new-key-pair
+      ImageId: !Ref LatestAmiId
+      Tags:
+        - Key: Name
+          Value: FridayHITT
+      UserData:
+        'Fn::Base64': !Sub >
+          #!/bash/bin
+
+          # Install and configure web server here
+
+          yum update -y
+
+          yum install -y httpd
+
+          systemctl start httpd
+
+          systemctl enable httpd
+
+          echo "<html><h1>Hello, FridayHITT!</h1></html>" >
+          /var/www/html/index.html
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: 78e4c7e7-90f0-420f-803a-853417a2202f
+  DatabaseServer:
+    Type: 'AWS::RDS::DBInstance'
+    Properties:
+      AllocatedStorage: 20
+      DBInstanceClass:
+        Ref: DBInstanceType
+      Engine: mysql
+      EngineVersion: '5.7'
+      MasterUsername: dbusername
+      MasterUserPassword: dbpassword
+      DBSubnetGroupName:
+        'Fn::Sub': FridayHITTDBSubnetGroup
+      VPCSecurityGroups:
+        - !Ref DatabaseSecurityGroup
+      Tags:
+        - Key: Name
+          Value: FridayHITT
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: da949af5-73b0-43f7-8f01-21dc82c67b0c
+  PublicRouteTable:
+    Type: 'AWS::EC2::RouteTable'
+    Properties:
+      VpcId:
+        Ref: VPC
+      Tags:
+        - Key: Name
+          Value: FridayHITT
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: 0a670957-d512-4a52-af72-65b7e4d1f082
+  PrivateRouteTable:
+    Type: 'AWS::EC2::RouteTable'
+    Properties:
+      VpcId:
+        Ref: VPC
+      Tags:
+        - Key: Name
+          Value: FridayHITT
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: a0a7a8cf-43ac-45cb-a92b-84ec03deab20
+  PublicRoute:
+    Type: 'AWS::EC2::Route'
+    DependsOn: AttachGateway
+    Properties:
+      RouteTableId:
+        Ref: PublicRouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId:
+        Ref: InternetGateway
+      Tags:
+        - Key: Name
+          Value: FridayHITT
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: 02913fbf-9170-493e-ae3d-6692575d4d4a
+  PrivateRoute1:
+    Type: 'AWS::EC2::Route'
+    Properties:
+      RouteTableId:
+        Ref: PrivateRouteTable
+      DestinationCidrBlock: 10.0.0.0/16
+      Tags:
+        - Key: Name
+          Value: FridayHITT
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: abb3585c-4618-4118-b292-8e227d13b2fd
+  PrivateRoute2:
+    Type: 'AWS::EC2::Route'
+    Properties:
+      RouteTableId:
+        Ref: PrivateRouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      NatGatewayId: nat-gateway-id
+      Tags:
+        - Key: Name
+          Value: FridayHITT
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: f31e4fa7-2294-45cb-8e23-0dbd6aa5c9bc
+  RGG3IX0R:
+    Type: 'AWS::ResourceGroups::Group'
+    Properties: {}
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: 5674eeb5-fe36-40b1-a718-c50a634e8851
+Outputs:
+  WebServer1PublicIP:
+    Description: Public IP address of WebServer1
+    Value: !GetAtt WebServer1.PublicIp
+  WebServer2PublicIP:
+    Description: Public IP address of WebServer2
+    Value: !GetAtt WebServer2.PublicIp

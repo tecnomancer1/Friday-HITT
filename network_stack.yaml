@@ -1,5 +1,6 @@
 AWSTemplateFormatVersion: 2010-09-09
 Description: FridayHITT Network Stack
+
 Parameters:
   InstanceType:
     Description: EC2 instance type
@@ -8,7 +9,8 @@ Parameters:
     AllowedValues:
       - t2.micro
       - t2.small
-    ConstraintDescription: Must be a valid EC2 instance type.
+    ConstraintDescription: Must be a valid EC2 instance type
+
   DBInstanceType:
     Description: RDS instance type
     Type: String
@@ -16,14 +18,17 @@ Parameters:
     AllowedValues:
       - db.t2.micro
       - db.t2.small
-    ConstraintDescription: Must be a valid RDS instance type.
+    ConstraintDescription: Must be a valid RDS instance type
+
   LatestAmiId:
     Type: 'AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>'
     Default: /aws/service/ami-amazon-linux-latest/amzn2-ami-minimal-hvm-x86_64-ebs
+
   NewKeyPairName:
     Description: Name of a new EC2 key pair to create
     Type: String
     Default: my-new-key-pair
+
 Resources:
   MyNewKeyPair:
     Type: 'AWS::EC2::KeyPair'
@@ -32,6 +37,7 @@ Resources:
       Tags:
         - Key: Name
           Value: FridayHITT
+
   VPC:
     Type: 'AWS::EC2::VPC'
     Properties:
@@ -41,18 +47,14 @@ Resources:
       Tags:
         - Key: Name
           Value: FridayHITT
-    Metadata:
-      'AWS::CloudFormation::Designer':
-        id: f698a220-9e60-4b03-a59f-54872f53f679
+
   InternetGateway:
     Type: 'AWS::EC2::InternetGateway'
     Properties:
       Tags:
         - Key: Name
           Value: FridayHITT
-    Metadata:
-      'AWS::CloudFormation::Designer':
-        id: 497793d4-7f02-4707-a1b0-28162bcfe403
+
   AttachGateway:
     Type: 'AWS::EC2::VPCGatewayAttachment'
     Properties:
@@ -60,9 +62,7 @@ Resources:
         Ref: VPC
       InternetGatewayId:
         Ref: InternetGateway
-    Metadata:
-      'AWS::CloudFormation::Designer':
-        id: 7d5e8ef8-32de-4878-beb6-6a96cb07b45e
+
   PublicSubnet1:
     Type: 'AWS::EC2::Subnet'
     Properties:
@@ -75,9 +75,7 @@ Resources:
       Tags:
         - Key: Name
           Value: FridayHITT
-    Metadata:
-      'AWS::CloudFormation::Designer':
-        id: 3fbb3111-fb9c-4c63-9a79-4c3ec2d6744e
+
   PublicSubnet2:
     Type: 'AWS::EC2::Subnet'
     Properties:
@@ -90,9 +88,7 @@ Resources:
       Tags:
         - Key: Name
           Value: FridayHITT
-    Metadata:
-      'AWS::CloudFormation::Designer':
-        id: b80ae5e6-5388-4b8c-ac8a-ae20f8265e56
+
   PrivateSubnet1:
     Type: 'AWS::EC2::Subnet'
     Properties:
@@ -105,9 +101,7 @@ Resources:
       Tags:
         - Key: Name
           Value: FridayHITT
-    Metadata:
-      'AWS::CloudFormation::Designer':
-        id: 96cd2065-993c-4a26-9ce0-259ae67d9f39
+
   PrivateSubnet2:
     Type: 'AWS::EC2::Subnet'
     Properties:
@@ -120,17 +114,16 @@ Resources:
       Tags:
         - Key: Name
           Value: FridayHITT
-    Metadata:
-      'AWS::CloudFormation::Designer':
-        id: 4a93252c-108b-4b4f-8992-220baebd247d
-  DBSubnetGroup:  # DBSubnetGroup resource
-    Type: AWS::RDS::DBSubnetGroup
+
+  DBSubnetGroup:
+    Type: 'AWS::RDS::DBSubnetGroup'
     Properties:
       DBSubnetGroupName: FridayHITTDBSubnetGroup
       DBSubnetGroupDescription: Subnet group for RDS
       SubnetIds:
         - Ref: PrivateSubnet1
         - Ref: PrivateSubnet2
+
   WebSecurityGroup:
     Type: 'AWS::EC2::SecurityGroup'
     Properties:
@@ -145,9 +138,7 @@ Resources:
       Tags:
         - Key: Name
           Value: FridayHITT
-    Metadata:
-      'AWS::CloudFormation::Designer':
-        id: 3050f62f-d98e-47ab-8cfe-0db6a2ef4928
+
   DatabaseSecurityGroup:
     Type: 'AWS::EC2::SecurityGroup'
     Properties:
@@ -162,334 +153,120 @@ Resources:
       Tags:
         - Key: Name
           Value: FridayHITT
-    Metadata:
-      'AWS::CloudFormation::Designer':
-        id: 9899a1e0-1c99-4135-bec5-d9a20ea1bca1
-  WebServer1:
+
+  JumpboxSecurityGroup:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      GroupDescription: Security group for the jumpbox server
+      VpcId:
+        Ref: VPC
+      SecurityGroupIngress:
+        - CidrIp: YOUR_IP_ADDRESS/32 # Replace with your IP address
+          IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+      Tags:
+        - Key: Name
+          Value: FridayHITT-JumpboxSecurityGroup
+
+  Jumpbox:
     Type: 'AWS::EC2::Instance'
     Properties:
-      InstanceType:
-        Ref: InstanceType
+      InstanceType: !Ref InstanceType
       SecurityGroupIds:
-        - !GetAtt WebSecurityGroup.GroupId
-      SubnetId:
-        Ref: PublicSubnet1
-      KeyName: my-new-key-pair
+        - !GetAtt JumpboxSecurityGroup.GroupId
+      SubnetId: !Ref PublicSubnet1
+      KeyName: !Ref NewKeyPairName
       ImageId: !Ref LatestAmiId
       Tags:
         - Key: Name
-          Value: FridayHITT
+          Value: FridayHITT-Jumpbox
       UserData:
-        'Fn::Base64': !Sub >
+        'Fn::Base64': !Sub |
           #!/bin/bash
-
-          # Install and configure web server here
-
+          # Install and configure jumpbox here
           yum update -y
+          yum install -y some-useful-tools
+          # Add any additional setup or configuration as needed
 
-          yum install -y httpd
-
-          systemctl start httpd
-
-          systemctl enable httpd
-
-          echo "<html><h1>Hello, FridayHITT!</h1></html>" >
-          /var/www/html/index.html
-    Metadata:
-      'AWS::CloudFormation::Designer':
-        id: a797145e-1008-48f1-9004-f0f9e9e6d401
-  WebServer2:
-    Type: 'AWS::EC2::Instance'
-    Properties:
-      InstanceType:
-        Ref: InstanceType
-      SecurityGroupIds:
-        - !GetAtt WebSecurityGroup.GroupId
-      SubnetId:
-        Ref: PublicSubnet2
-      KeyName: my-new-key-pair
-      ImageId: !Ref LatestAmiId
-      Tags:
-        - Key: Name
-          Value: FridayHITT
-      UserData:
-        'Fn::Base64': !Sub >
-          #!/bash/bin
-
-          # Install and configure web server here
-
-          yum update -y
-
-          yum install -y httpd
-
-          systemctl start httpd
-
-          systemctl enable httpd
-
-          echo "<html><h1>Hello, FridayHITT!</h1></html>" >
-          /var/www/html/index.html
-    Metadata:
-      'AWS::CloudFormation::Designer':
-        id: 78e4c7e7-90f0-420f-803a-853417a2202f
-  DatabaseServer:
+  DatabaseServer1:
     Type: 'AWS::RDS::DBInstance'
     Properties:
       AllocatedStorage: 20
-      DBInstanceClass:
-        Ref: DBInstanceType
+      DBInstanceClass: !Ref DBInstanceType
       Engine: mysql
       EngineVersion: '5.7'
-      MasterUsername: dbusername
-      MasterUserPassword: dbpassword
-      DBSubnetGroupName:
-        'Fn::Sub': FridayHITTDBSubnetGroup
+      MasterUsername: dbusername1
+      MasterUserPassword: dbpassword1
+      DBSubnetGroupName: !Ref DBSubnetGroup
       VPCSecurityGroups:
         - !Ref DatabaseSecurityGroup
       Tags:
         - Key: Name
-          Value: FridayHITT
-    Metadata:
-      'AWS::CloudFormation::Designer':
-        id: da949af5-73b0-43f7-8f01-21dc82c67b0c
-  PublicRouteTable:
-    Type: 'AWS::EC2::RouteTable'
+          Value: FridayHITT-DBServer1
+
+  DatabaseServer2:
+    Type: 'AWS::RDS::DBInstance'
     Properties:
-      VpcId:
-        Ref: VPC
+      AllocatedStorage: 20
+      DBInstanceClass: !Ref DBInstanceType
+      Engine: mysql
+      EngineVersion: '5.7'
+      MasterUsername: dbusername2
+      MasterUserPassword: dbpassword2
+      DBSubnetGroupName: !Ref DBSubnetGroup
+      VPCSecurityGroups:
+        - !Ref DatabaseSecurityGroup
       Tags:
         - Key: Name
-          Value: FridayHITT
-    Metadata:
-      'AWS::CloudFormation::Designer':
-        id: 0a670957-d512-4a52-af72-65b7e4d1f082
-  PrivateRouteTable:
-    Type: 'AWS::EC2::RouteTable'
+          Value: FridayHITT-DBServer2
+
+  WebServer1:
+    Type: 'AWS::EC2::Instance'
     Properties:
-      VpcId:
-        Ref: VPC
+      InstanceType: !Ref InstanceType
+      SecurityGroupIds:
+        - !GetAtt WebSecurityGroup.GroupId
+      SubnetId: !Ref PublicSubnet1
+      KeyName: !Ref NewKeyPairName
+      ImageId: !Ref LatestAmiId
       Tags:
         - Key: Name
-          Value: FridayHITT
-    Metadata:
-      'AWS::CloudFormation::Designer':
-        id: a0a7a8cf-43ac-45cb-a92b-84ec03deab20
-  PublicRoute:
-    Type: 'AWS::EC2::Route'
-    DependsOn: AttachGateway
+          Value: FridayHITT-WebServer1
+      UserData:
+        'Fn::Base64': !Sub |
+          #!/bin/bash
+          # Install and configure web server here
+          yum update -y
+          yum install -y httpd
+          systemctl start httpd
+          systemctl enable httpd
+          echo "<html><h1>Hello, FridayHITT WebServer1!</h1></html>" > /var/www/html/index.html
+
+  WebServer2:
+    Type: 'AWS::EC2::Instance'
     Properties:
-      RouteTableId:
-        Ref: PublicRouteTable
-      DestinationCidrBlock: 0.0.0.0/0
-      GatewayId:
-        Ref: InternetGateway
+      InstanceType: !Ref InstanceType
+      SecurityGroupIds:
+        - !GetAtt WebSecurityGroup.GroupId
+      SubnetId: !Ref PublicSubnet2
+      KeyName: !Ref NewKeyPairName
+      ImageId: !Ref LatestAmiId
       Tags:
         - Key: Name
-          Value: FridayHITT
-    Metadata:
-      'AWS::CloudFormation::Designer':
-        id: 02913fbf-9170-493e-ae3d-6692575d4d4a
-  PrivateRoute1:
-    Type: 'AWS::EC2::Route'
-    Properties:
-      RouteTableId:
-        Ref: PrivateRouteTable
-      DestinationCidrBlock: 10.0.0.0/16
-      Tags:
-        - Key: Name
-          Value: FridayHITT
-    Metadata:
-      'AWS::CloudFormation::Designer':
-        id: abb3585c-4618-4118-b292-8e227d13b2fd
-  PrivateRoute2:
-    Type: 'AWS::EC2::Route'
-    Properties:
-      RouteTableId:
-        Ref: PrivateRouteTable
-      DestinationCidrBlock: 0.0.0.0/0
-      NatGatewayId: nat-gateway-id
-      Tags:
-        - Key: Name
-          Value: FridayHITT
-    Metadata:
-      'AWS::CloudFormation::Designer':
-        id: f31e4fa7-2294-45cb-8e23-0dbd6aa5c9bc
+          Value: FridayHITT-WebServer2
+      UserData:
+        'Fn::Base64': !Sub |
+          #!/bin/bash
+          # Install and configure web server here
+          yum update -y
+          yum install -y httpd
+          systemctl start httpd
+          systemctl enable httpd
+          echo "<html><h1>Hello, FridayHITT WebServer2!</h1></html>" > /var/www/html/index.html
+
 Outputs:
-  WebServer1PublicIP:
-    Description: Public IP address of WebServer1
-    Value: !GetAtt WebServer1.PublicIp
-  WebServer2PublicIP:
-    Description: Public IP address of WebServer2
-    Value: !GetAtt WebServer2.PublicIp
-Metadata:
-  'AWS::CloudFormation::Designer':
-    497793d4-7f02-4707-a1b0-28162bcfe403:
-      size:
-        width: 60
-        height: 60
-      position:
-        x: 60
-        'y': 690
-      z: 1
-      embeds: []
-    f698a220-9e60-4b03-a59f-54872f53f679:
-      size:
-        width: 330
-        height: 240
-      position:
-        x: 60
-        'y': 90
-      z: 1
-      embeds:
-        - 9899a1e0-1c99-4135-bec5-d9a20ea1bca1
-        - 3050f62f-d98e-47ab-8cfe-0db6a2ef4928
-    a0a7a8cf-43ac-45cb-a92b-84ec03deab20:
-      size:
-        width: 150
-        height: 150
-      position:
-        x: 660
-        'y': 510
-      z: 1
-      embeds: []
-    f31e4fa7-2294-45cb-8e23-0dbd6aa5c9bc:
-      size:
-        width: 60
-        height: 60
-      position:
-        x: 180
-        'y': 690
-      z: 1
-      embeds: []
-    abb3585c-4618-4118-b292-8e227d13b2fd:
-      size:
-        width: 60
-        height: 60
-      position:
-        x: 300
-        'y': 690
-      z: 1
-      embeds: []
-    0a670957-d512-4a52-af72-65b7e4d1f082:
-      size:
-        width: 150
-        height: 150
-      position:
-        x: 660
-        'y': 300
-      z: 1
-      embeds: []
-    9899a1e0-1c99-4135-bec5-d9a20ea1bca1:
-      size:
-        width: 60
-        height: 60
-      position:
-        x: 90
-        'y': 150
-      z: 2
-      parent: f698a220-9e60-4b03-a59f-54872f53f679
-      embeds: []
-      iscontainedinside:
-        - f698a220-9e60-4b03-a59f-54872f53f679
-    da949af5-73b0-43f7-8f01-21dc82c67b0c:
-      size:
-        width: 60
-        height: 60
-      position:
-        x: 420
-        'y': 690
-      z: 1
-      embeds: []
-    3050f62f-d98e-47ab-8cfe-0db6a2ef4928:
-      size:
-        width: 60
-        height: 60
-      position:
-        x: 210
-        'y': 150
-      z: 2
-      parent: f698a220-9e60-4b03-a59f-54872f53f679
-      embeds: []
-      iscontainedinside:
-        - f698a220-9e60-4b03-a59f-54872f53f679
-    4a93252c-108b-4b4f-8992-220baebd247d:
-      size:
-        width: 150
-        height: 150
-      position:
-        x: 660
-        'y': 90
-      z: 1
-      embeds: []
-    96cd2065-993c-4a26-9ce0-259ae67d9f39:
-      size:
-        width: 150
-        height: 150
-      position:
-        x: 450
-        'y': 90
-      z: 1
-      embeds: []
-    b80ae5e6-5388-4b8c-ac8a-ae20f8265e56:
-      size:
-        width: 240
-        height: 240
-      position:
-        x: 360
-        'y': 390
-      z: 1
-      embeds:
-        - 78e4c7e7-90f0-420f-803a-853417a2202f
-    78e4c7e7-90f0-420f-803a-853417a2202f:
-      size:
-        width: 60
-        height: 60
-      position:
-        x: 390
-        'y': 450
-      z: 2
-      parent: b80ae5e6-5388-4b8c-ac8a-ae20f8265e56
-      embeds: []
-      isassociatedwith:
-        - 3050f62f-d98e-47ab-8cfe-0db6a2ef4928
-      iscontainedinside:
-        - b80ae5e6-5388-4b8c-ac8a-ae20f8265e56
-    3fbb3111-fb9c-4c63-9a79-4c3ec2d6744e:
-      size:
-        width: 240
-        height: 240
-      position:
-        x: 60
-        'y': 390
-      z: 1
-      embeds:
-        - a797145e-1008-48f1-9004-f0f9e9e6d401
-    a797145e-1008-48f1-9004-f0f9e9e6d401:
-      size:
-        width: 60
-        height: 60
-      position:
-        x: 90
-        'y': 450
-      z: 2
-      parent: 3fbb3111-fb9c-4c63-9a79-4c3ec2d6744e
-      embeds: []
-      isassociatedwith:
-        - 3050f62f-d98e-47ab-8cfe-0db6a2ef4928
-      iscontainedinside:
-        - 3fbb3111-fb9c-4c63-9a79-4c3ec2d6744e
-    7d5e8ef8-32de-4878-beb6-6a96cb07b45e:
-      source:
-        id: f698a220-9e60-4b03-a59f-54872f53f679
-      target:
-        id: 497793d4-7f02-4707-a1b0-28162bcfe403
-    02913fbf-9170-493e-ae3d-6692575d4d4a:
-      size:
-        width: 60
-        height: 60
-      position:
-        x: 540
-        'y': 690
-      z: 1
-      embeds: []
-      dependson:
-        - 7d5e8ef8-32de-4878-beb6-6a96cb07b45e
+  JumpboxPublicIP:
+    Description: Public IP address of the Jumpbox
+    Value: !GetAtt Jumpbox.PublicIp
+

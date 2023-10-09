@@ -32,6 +32,14 @@ Parameters:
     Description: Master user password for the RDS database
     Type: String
     Default: dbpassword
+  EnableMultiAZ:
+    Description: Enable Multi-AZ deployment for the RDS database
+    Type: String
+    Default: true
+    AllowedValues:
+      - true
+      - false
+    ConstraintDescription: Must be either 'true' or 'false'.
 Resources:
   MyNewKeyPair:
     Type: 'AWS::EC2::KeyPair'
@@ -251,6 +259,10 @@ Resources:
         Ref: DBMasterUsername # Use the parameter for the MasterUsername
       MasterUserPassword:
         Ref: DBMasterUserPassword # Use the parameter for the MasterUserPassword
+      MultiAZ:
+        Fn::Equals:
+          - !Ref EnableMultiAZ
+          - true
       DBSubnetGroupName:
         'Fn::Sub': FridayHITTDBSubnetGroup
       VPCSecurityGroups:

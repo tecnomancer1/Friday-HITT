@@ -27,10 +27,12 @@ Parameters:
   DBMasterUsername:
     Description: Master username for the RDS database
     Type: String
+    MaxLength: 10
     Default: dbusername
   DBMasterUserPassword:
     Description: Master user password for the RDS database
     Type: String
+    MinLength: 8
     Default: dbpassword
   EnableMultiAZ:
     Description: Enable Multi-AZ deployment for the RDS database

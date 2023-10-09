@@ -40,6 +40,10 @@ Parameters:
       - true
       - false
     ConstraintDescription: Must be either 'true' or 'false'.
+  AllocatedStorage:
+    Description: Allocated storage for the RDS database
+    Type: Number
+    Default: 10
 Resources:
   MyNewKeyPair:
     Type: 'AWS::EC2::KeyPair'
@@ -250,7 +254,8 @@ Resources:
   DatabaseServer:
     Type: 'AWS::RDS::DBInstance'
     Properties:
-      AllocatedStorage: 20
+      AllocatedStorage:
+        Ref: AllocatedStorage # Use the parameter for AllocatedStorage
       DBInstanceClass:
         Ref: DBInstanceType
       Engine: mariadb

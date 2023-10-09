@@ -24,6 +24,14 @@ Parameters:
     Description: Name of a new EC2 key pair to create
     Type: String
     Default: my-new-key-pair
+  DBMasterUsername:
+    Description: Master username for the RDS database
+    Type: String
+    Default: dbusername
+  DBMasterUserPassword:
+    Description: Master user password for the RDS database
+    Type: String
+    Default: dbpassword
 Resources:
   MyNewKeyPair:
     Type: 'AWS::EC2::KeyPair'
@@ -237,10 +245,12 @@ Resources:
       AllocatedStorage: 20
       DBInstanceClass:
         Ref: DBInstanceType
-      Engine: mysql
-      EngineVersion: '5.7'
-      MasterUsername: dbusername
-      MasterUserPassword: dbpassword
+      Engine: mariadb
+      EngineVersion: '10.4' # Replace with your desired MariaDB version
+      MasterUsername:
+        Ref: DBMasterUsername # Use the parameter for the MasterUsername
+      MasterUserPassword:
+        Ref: DBMasterUserPassword # Use the parameter for the MasterUserPassword
       DBSubnetGroupName:
         'Fn::Sub': FridayHITTDBSubnetGroup
       VPCSecurityGroups:

@@ -282,9 +282,7 @@ Resources:
         Ref: DBMasterUsername # Use the parameter for the MasterUsername
       MasterUserPassword:
         Ref: DBMasterUserPassword # Use the parameter for the MasterUserPassword
-      MultiAZ:
-        Fn::Equals:
-          - !Ref EnableMultiAZ
+      MultiAZ: !Ref EnableMultiAZ
       DBSubnetGroupName:
         'Fn::Sub': FridayHITTDBSubnetGroup
       VPCSecurityGroups:

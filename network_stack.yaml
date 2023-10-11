@@ -131,6 +131,9 @@ Resources:
         Ref: VPC
       CidrBlock: 10.0.2.0/24
       AvailabilityZone: eu-west-1a
+      Tags:
+        - Key: Name
+          Value: !Sub '${AWS::StackName}-FridayHITT'
     Metadata:
       'AWS::CloudFormation::Designer':
         id: 96cd2065-993c-4a26-9ce0-259ae67d9f39
@@ -141,6 +144,9 @@ Resources:
         Ref: VPC
       CidrBlock: 10.0.3.0/24
       AvailabilityZone: eu-west-1b
+      Tags:
+        - Key: Name
+          Value: !Sub '${AWS::StackName}-FridayHITT'
     Metadata:
       'AWS::CloudFormation::Designer':
         id: 4a93252c-108b-4b4f-8992-220baebd247d
@@ -318,9 +324,6 @@ Resources:
       DestinationCidrBlock: 0.0.0.0/0
       GatewayId:
         Ref: InternetGateway
-      Tags:
-        - Key: Name
-          Value: !Sub '${AWS::StackName}-FridayHITT'
     Metadata:
       'AWS::CloudFormation::Designer':
         id: 02913fbf-9170-493e-ae3d-6692575d4d4a
@@ -330,9 +333,6 @@ Resources:
       RouteTableId:
         Ref: PrivateRouteTable
       DestinationCidrBlock: 10.0.0.0/16
-      Tags:
-        - Key: Name
-          Value: !Sub '${AWS::StackName}-FridayHITT'
     Metadata:
       'AWS::CloudFormation::Designer':
         id: abb3585c-4618-4118-b292-8e227d13b2fd
@@ -343,9 +343,6 @@ Resources:
         Ref: PrivateRouteTable
       DestinationCidrBlock: 0.0.0.0/0
       NatGatewayId: nat-gateway-id
-      Tags:
-        - Key: Name
-          Value: !Sub '${AWS::StackName}-FridayHITT'
     Metadata:
       'AWS::CloudFormation::Designer':
         id: f31e4fa7-2294-45cb-8e23-0dbd6aa5c9bc

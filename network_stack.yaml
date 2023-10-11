@@ -170,8 +170,8 @@ Resources:
       SecurityGroupIngress:
         - CidrIp: 0.0.0.0/0
           IpProtocol: tcp
-          FromPort: 80
-          ToPort: 80
+          FromPort: !Select [ 0, !Ref SecurityGroupPorts ]
+          ToPort: !Select [ 0, !Ref SecurityGroupPorts ]
         - CidrIp: 10.0.0.0/16
           IpProtocol: icmp
           FromPort: -1
@@ -191,8 +191,8 @@ Resources:
       SecurityGroupIngress:
         - CidrIp: 10.0.0.0/16
           IpProtocol: tcp
-          FromPort: 3306
-          ToPort: 3306
+          FromPort: !Select [ 1, !Ref SecurityGroupPorts ]
+          ToPort: !Select [ 1, !Ref SecurityGroupPorts ]
         - CidrIp: 10.0.0.0/16
           IpProtocol: icmp
           FromPort: -1

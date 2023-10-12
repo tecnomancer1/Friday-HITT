@@ -249,7 +249,7 @@ Resources:
         - !GetAtt WebSecurityGroup.GroupId
       SubnetId:
         Ref: PublicSubnet1
-      KeyName: MyNewKeyPair
+      KeyName: !Ref NewKeyPairName
       ImageId: !Ref LatestAmiId
       Tags:
         - Key: Name
@@ -282,7 +282,7 @@ Resources:
         - !GetAtt WebSecurityGroup.GroupId
       SubnetId:
         Ref: PublicSubnet2
-      KeyName: MyNewKeyPair
+      KeyName: !Ref NewKeyPairName
       ImageId: !Ref LatestAmiId
       Tags:
         - Key: Name

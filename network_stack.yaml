@@ -161,6 +161,23 @@ Resources:
     Metadata:
       'AWS::CloudFormation::Designer':
         id: d53149ba-2d63-4e9d-9901-586753a8e802
+
+  JumpBox:
+    Type: 'AWS::EC2::Instance'
+    Properties:
+      InstanceType: !Ref InstanceType
+      SecurityGroupIds:
+        - !GetAtt WebSecurityGroup.GroupId
+      SubnetId: !Ref PublicSubnet1  # Choose the appropriate subnet
+      KeyName: MyNewKeyPair  # Update this with your desired key pair
+      ImageId: !Ref LatestAmiId  # Specify the desired AMI ID
+      Tags:
+        - Key: Name
+          Value: !Sub '${AWS::StackName}-JumpBox'
+      UserData:
+        'Fn::Base64': !Sub |
+          #!/bin/bash
+
   WebSecurityGroup:
     Type: 'AWS::EC2::SecurityGroup'
     Properties:
@@ -212,7 +229,7 @@ Resources:
         - !GetAtt WebSecurityGroup.GroupId
       SubnetId:
         Ref: PublicSubnet1
-      KeyName: my-new-key-pair
+      KeyName: MyNewKeyPair
       ImageId: !Ref LatestAmiId
       Tags:
         - Key: Name
@@ -245,7 +262,7 @@ Resources:
         - !GetAtt WebSecurityGroup.GroupId
       SubnetId:
         Ref: PublicSubnet2
-      KeyName: my-new-key-pair
+      KeyName: MyNewKeyPair
       ImageId: !Ref LatestAmiId
       Tags:
         - Key: Name

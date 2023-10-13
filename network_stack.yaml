@@ -169,7 +169,6 @@ Resources:
       SubnetId: !Ref PublicSubnet1
       KeyName: !Ref NewKeyPairName
       ImageId: !Ref LatestAmiId
-      EC2InstanceConnect: true  # Enable EC2 Instance Connect
       Tags:
         - Key: Name
           Value: !Sub '${AWS::StackName}-Jumpbox'
@@ -226,7 +225,6 @@ Resources:
       KeyName: !Ref NewKeyPairName
       SecurityGroups:
         - !GetAtt WebSecurityGroup.GroupId
-      EC2InstanceConnect: true  # Enable EC2 Instance Connect
       UserData:
         'Fn::Base64': !Sub |
           #!/bin/bash
@@ -309,7 +307,6 @@ Resources:
         'Fn::Sub': FridayHITTDBSubnetGroup
       VPCSecurityGroups:
         - !Ref DatabaseSecurityGroup
-      EC2InstanceConnect: true  # Enable EC2 Instance Connect
       Tags:
         - Key: Name
           Value: !Sub '${AWS::StackName}-DatabaseServer'
@@ -322,6 +319,18 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub '${AWS::StackName}-PublicRouteTable'
+
+  PublicRouteTableAssociation1:
+    Type: 'AWS::EC2::SubnetRouteTableAssociation'
+    Properties:
+      SubnetId: !Ref PublicSubnet1
+      RouteTableId: !Ref PublicRouteTable
+
+  PublicRouteTableAssociation2:
+    Type: 'AWS::EC2::SubnetRouteTableAssociation'
+    Properties:
+      SubnetId: !Ref PublicSubnet2
+      RouteTableId: !Ref PublicRouteTable
 
 Outputs:
   JumpboxPublicIPAddress:

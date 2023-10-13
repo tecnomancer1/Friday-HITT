@@ -102,17 +102,6 @@ Resources:
         - Key: Name
           Value: !Sub '${AWS::StackName}-PublicSubnet1'
 
-  PublicSubnet2:
-    Type: 'AWS::EC2::Subnet'
-    Properties:
-      VpcId:
-        Ref: VPC
-      CidrBlock: 10.0.1.0/24
-      AvailabilityZone: eu-west-1b
-      Tags:
-        - Key: Name
-          Value: !Sub '${AWS::StackName}-PublicSubnet2'
-
   PrivateSubnet1:
     Type: 'AWS::EC2::Subnet'
     Properties:
@@ -216,22 +205,16 @@ Resources:
         - Key: Name
           Value: !Sub '${AWS::StackName}-DatabaseSecurityGroup'
 
-  WebServer1:
-    Type: 'AWS::EC2::Instance'
+  WebServerLaunchConfiguration:
+    Type: 'AWS::AutoScaling::LaunchConfiguration'
     Properties:
-      InstanceType:
-        Ref: InstanceType
-      SecurityGroupIds:
-        - !GetAtt WebSecurityGroup.GroupId
-      SubnetId:
-        Ref: PublicSubnet1
-      KeyName: !Ref NewKeyPairName
       ImageId: !Ref LatestAmiId
-      Tags:
-        - Key: Name
-          Value: !Sub '${AWS::StackName}-WebServer1'
+      InstanceType: !Ref InstanceType
+      KeyName: !Ref NewKeyPairName
+      SecurityGroups:
+        - !GetAtt WebSecurityGroup.GroupId
       UserData:
-        'Fn::Base64': !Sub >
+        'Fn::Base64': !Sub |
           #!/bin/bash
           # Install and configure web server here
           yum update -y
@@ -241,30 +224,19 @@ Resources:
           echo "<html><h1>Hello, FridayHITT!</h1></html>" >
           /var/www/html/index.html
 
-  WebServer2:
-    Type: 'AWS::EC2::Instance'
+  WebServerAutoScalingGroup:
+    Type: 'AWS::AutoScaling::AutoScalingGroup'
     Properties:
-      InstanceType:
-        Ref: InstanceType
-      SecurityGroupIds:
-        - !GetAtt WebSecurityGroup.GroupId
-      SubnetId:
-        Ref: PublicSubnet2
-      KeyName: !Ref NewKeyPairName
-      ImageId: !Ref LatestAmiId
+      LaunchConfigurationName: !Ref WebServerLaunchConfiguration
+      MinSize: 2
+      MaxSize: 4
+      DesiredCapacity: 2
+      VPCZoneIdentifier:
+        - !Ref PublicSubnet1
       Tags:
         - Key: Name
-          Value: !Sub '${AWS::StackName}-WebServer2'
-      UserData:
-        'Fn::Base64': !Sub >
-          #!/bash/bin
-          # Install and configure web server here
-          yum update -y
-          yum install -y httpd
-          systemctl start httpd
-          systemctl enable httpd
-          echo "<html><h1>Hello, FridayHITT!</h1></html>" >
-          /var/www/html/index.html
+          Value: !Sub '${AWS::StackName}-WebServer'
+          PropagateAtLaunch: true
 
   DatabaseServer:
     Type: 'AWS::RDS::DBInstance'
@@ -297,21 +269,3 @@ Resources:
         - Key: Name
           Value: !Sub '${AWS::StackName}-PublicRouteTable'
 
-  PrivateRouteTable:
-    Type: 'AWS::EC2::RouteTable'
-    Properties:
-      VpcId:
-        Ref: VPC
-      Tags:
-        - Key: Name
-          Value: !Sub '${AWS::StackName}-PrivateRouteTable'
-
-  PublicRoute:
-    Type: 'AWS::EC2::Route'
-    DependsOn: AttachGateway
-    Properties:
-      RouteTableId:
-        Ref: PublicRouteTable
-      DestinationCidrBlock: 0.0.0.0/0
-      GatewayId:
-        Ref: InternetGateway

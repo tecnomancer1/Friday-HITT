@@ -56,6 +56,24 @@ Parameters:
     Type: List<Number>
     Description: 'Port numbers as a list: <web-server-port>,<database-port>'
     Default: '80,3306,22'
+  MinSize:
+    Description: Minimum number of instances in the Auto Scaling Group
+    Type: Number
+    Default: 2
+    MinValue: 1
+    MaxValue: 10
+  MaxSize:
+    Description: Maximum number of instances in the Auto Scaling Group
+    Type: Number
+    Default: 4
+    MinValue: 1
+    MaxValue: 10
+  DesiredCapacity:
+    Description: Desired number of instances in the Auto Scaling Group
+    Type: Number
+    Default: 2
+    MinValue: 1
+    MaxValue: 10
 
 Resources:
   MyNewKeyPair:
@@ -228,9 +246,9 @@ Resources:
     Type: 'AWS::AutoScaling::AutoScalingGroup'
     Properties:
       LaunchConfigurationName: !Ref WebServerLaunchConfiguration
-      MinSize: 2
-      MaxSize: 4
-      DesiredCapacity: 2
+      MinSize: !Ref MinSize
+      MaxSize: !Ref MaxSize
+      DesiredCapacity: !Ref DesiredCapacity
       VPCZoneIdentifier:
         - !Ref PublicSubnet1
       Tags:

@@ -319,3 +319,7 @@ Resources:
         - Key: Name
           Value: !Sub '${AWS::StackName}-PublicRouteTable'
 
+Outputs:
+  NetworkLoadBalancerDNSName:
+   Description: DNS name of the Network Load Balancer
+   Value: !GetAtt WebServerLoadBalancer.DNSName

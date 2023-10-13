@@ -1,5 +1,6 @@
 AWSTemplateFormatVersion: 2010-09-09
 Description: FridayHITT Network Stack
+
 Parameters:
   InstanceType:
     Description: EC2 instance type
@@ -8,7 +9,7 @@ Parameters:
     AllowedValues:
       - t2.micro
       - t2.small
-    ConstraintDescription: Must be a valid EC2 instance type.
+    ConstraintDescription: Must be a valid EC2 instance type
   DBInstanceType:
     Description: RDS instance type
     Type: String
@@ -16,7 +17,7 @@ Parameters:
     AllowedValues:
       - db.t2.micro
       - db.t2.small
-    ConstraintDescription: Must be a valid RDS instance type.
+    ConstraintDescription: Must be a valid RDS instance type
   LatestAmiId:
     Type: 'AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>'
     Default: /aws/service/ami-amazon-linux-latest/amzn2-ami-minimal-hvm-x86_64-ebs
@@ -43,18 +44,18 @@ Parameters:
     AllowedValues:
       - true
       - false
-    ConstraintDescription: Must be either 'true' or 'false'.
+    ConstraintDescription: Must be either 'true' or 'false'
   AllocatedStorage:
     Description: Allocated storage for the RDS database
     Type: Number
     MinValue: 10
     MaxValue: 20
-    ConstraintDescription: Allowed database size between 10 and 20.
+    ConstraintDescription: Allowed database size between 10 and 20
     Default: 10
   SecurityGroupPorts:
     Type: List<Number>
     Description: 'Port numbers as a list: <web-server-port>,<database-port>'
-    Default: '80,3306, 22'
+    Default: '80,3306,22'
 
 Resources:
   MyNewKeyPair:
@@ -63,7 +64,7 @@ Resources:
       KeyName: !Ref NewKeyPairName
       Tags:
         - Key: Name
-          Value: !Sub '${AWS::StackName}-FridayHITT'
+          Value: !Sub '${AWS::StackName}-KeyPair'
 
   VPC:
     Type: 'AWS::EC2::VPC'
@@ -73,14 +74,14 @@ Resources:
       EnableDnsHostnames: true
       Tags:
         - Key: Name
-          Value: !Sub '${AWS::StackName}-FridayHITT'
+          Value: !Sub '${AWS::StackName}-VPC'
 
   InternetGateway:
     Type: 'AWS::EC2::InternetGateway'
     Properties:
       Tags:
         - Key: Name
-          Value: !Sub '${AWS::StackName}-FridayHITT'
+          Value: !Sub '${AWS::StackName}-InternetGateway'
 
   AttachGateway:
     Type: 'AWS::EC2::VPCGatewayAttachment'
@@ -99,7 +100,7 @@ Resources:
       AvailabilityZone: eu-west-1a
       Tags:
         - Key: Name
-          Value: !Sub '${AWS::StackName}-FridayHITT'
+          Value: !Sub '${AWS::StackName}-PublicSubnet1'
 
   PublicSubnet2:
     Type: 'AWS::EC2::Subnet'
@@ -110,7 +111,7 @@ Resources:
       AvailabilityZone: eu-west-1b
       Tags:
         - Key: Name
-          Value: !Sub '${AWS::StackName}-FridayHITT'
+          Value: !Sub '${AWS::StackName}-PublicSubnet2'
 
   PrivateSubnet1:
     Type: 'AWS::EC2::Subnet'
@@ -121,7 +122,7 @@ Resources:
       AvailabilityZone: eu-west-1a
       Tags:
         - Key: Name
-          Value: !Sub '${AWS::StackName}-FridayHITT'
+          Value: !Sub '${AWS::StackName}-PrivateSubnet1'
 
   PrivateSubnet2:
     Type: 'AWS::EC2::Subnet'
@@ -132,7 +133,7 @@ Resources:
       AvailabilityZone: eu-west-1b
       Tags:
         - Key: Name
-          Value: !Sub '${AWS::StackName}-FridayHITT'
+          Value: !Sub '${AWS::StackName}-PrivateSubnet2'
 
   DBSubnetGroup:
     Type: 'AWS::RDS::DBSubnetGroup'
@@ -152,11 +153,11 @@ Resources:
       SecurityGroupIngress:
         - CidrIp: 10.0.0.0/16
           IpProtocol: tcp
-          FromPort: !Select [ 2, !Ref SecurityGroupPorts ]
-          ToPort:  !Select [ 2, !Ref SecurityGroupPorts ]
+          FromPort: !Select [2, !Ref SecurityGroupPorts]
+          ToPort: !Select [2, !Ref SecurityGroupPorts]
       Tags:
         - Key: Name
-          Value: !Sub '${AWS::StackName}-FridayHITT'
+          Value: !Sub '${AWS::StackName}-JumpboxSecurityGroup'
 
   Jumpbox:
     Type: 'AWS::EC2::Instance'
@@ -169,7 +170,7 @@ Resources:
       ImageId: !Ref LatestAmiId
       Tags:
         - Key: Name
-          Value: !Sub '${AWS::StackName}-FridayHITT'
+          Value: !Sub '${AWS::StackName}-Jumpbox'
       UserData:
         'Fn::Base64': !Sub |
           #!/bin/bash
@@ -186,15 +187,15 @@ Resources:
       SecurityGroupIngress:
         - CidrIp: 0.0.0.0/0
           IpProtocol: tcp
-          FromPort: !Select [ 0, !Ref SecurityGroupPorts ]
-          ToPort: !Select [ 0, !Ref SecurityGroupPorts ]
+          FromPort: !Select [0, !Ref SecurityGroupPorts]
+          ToPort: !Select [0, !Ref SecurityGroupPorts]
         - CidrIp: 10.0.0.0/16
           IpProtocol: icmp
           FromPort: -1
           ToPort: -1  # Allows all ICMP types and codes
       Tags:
         - Key: Name
-          Value: !Sub '${AWS::StackName}-FridayHITT'
+          Value: !Sub '${AWS::StackName}-WebSecurityGroup'
 
   DatabaseSecurityGroup:
     Type: 'AWS::EC2::SecurityGroup'
@@ -205,15 +206,15 @@ Resources:
       SecurityGroupIngress:
         - CidrIp: 10.0.0.0/16
           IpProtocol: tcp
-          FromPort: !Select [ 1, !Ref SecurityGroupPorts ]
-          ToPort: !Select [ 1, !Ref SecurityGroupPorts ]
+          FromPort: !Select [1, !Ref SecurityGroupPorts]
+          ToPort: !Select [1, !Ref SecurityGroupPorts]
         - CidrIp: 10.0.0.0/16
           IpProtocol: icmp
           FromPort: -1
           ToPort: -1  # This allows all ICMP types and codes
       Tags:
         - Key: Name
-          Value: !Sub '${AWS::StackName}-FridayHITT'
+          Value: !Sub '${AWS::StackName}-DatabaseSecurityGroup'
 
   WebServer1:
     Type: 'AWS::EC2::Instance'
@@ -228,21 +229,15 @@ Resources:
       ImageId: !Ref LatestAmiId
       Tags:
         - Key: Name
-          Value: !Sub '${AWS::StackName}-FridayHITT'
+          Value: !Sub '${AWS::StackName}-WebServer1'
       UserData:
         'Fn::Base64': !Sub >
           #!/bin/bash
-
           # Install and configure web server here
-
           yum update -y
-
           yum install -y httpd
-
           systemctl start httpd
-
           systemctl enable httpd
-
           echo "<html><h1>Hello, FridayHITT!</h1></html>" >
           /var/www/html/index.html
 
@@ -259,21 +254,15 @@ Resources:
       ImageId: !Ref LatestAmiId
       Tags:
         - Key: Name
-          Value: !Sub '${AWS::StackName}-FridayHITT'
+          Value: !Sub '${AWS::StackName}-WebServer2'
       UserData:
         'Fn::Base64': !Sub >
           #!/bash/bin
-
           # Install and configure web server here
-
           yum update -y
-
           yum install -y httpd
-
           systemctl start httpd
-
           systemctl enable httpd
-
           echo "<html><h1>Hello, FridayHITT!</h1></html>" >
           /var/www/html/index.html
 
@@ -297,7 +286,7 @@ Resources:
         - !Ref DatabaseSecurityGroup
       Tags:
         - Key: Name
-          Value: !Sub '${AWS::StackName}-FridayHITT'
+          Value: !Sub '${AWS::StackName}-DatabaseServer'
 
   PublicRouteTable:
     Type: 'AWS::EC2::RouteTable'
@@ -306,7 +295,7 @@ Resources:
         Ref: VPC
       Tags:
         - Key: Name
-          Value: !Sub '${AWS::StackName}-FridayHITT'
+          Value: !Sub '${AWS::StackName}-PublicRouteTable'
 
   PrivateRouteTable:
     Type: 'AWS::EC2::RouteTable'
@@ -315,7 +304,7 @@ Resources:
         Ref: VPC
       Tags:
         - Key: Name
-          Value: !Sub '${AWS::StackName}-FridayHITT'
+          Value: !Sub '${AWS::StackName}-PrivateRouteTable'
 
   PublicRoute:
     Type: 'AWS::EC2::Route'
@@ -326,4 +315,3 @@ Resources:
       DestinationCidrBlock: 0.0.0.0/0
       GatewayId:
         Ref: InternetGateway
-

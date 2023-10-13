@@ -152,8 +152,8 @@ Resources:
       SecurityGroupIngress:
         - CidrIp: 10.0.0.0/16
           IpProtocol: tcp
-          FromPort: 22
-          ToPort: 22
+          FromPort: !Select [ 2, !Ref SecurityGroupPorts ]
+          ToPort:  !Select [ 2, !Ref SecurityGroupPorts ]
       Tags:
         - Key: Name
           Value: !Sub '${AWS::StackName}-FridayHITT'
@@ -326,35 +326,4 @@ Resources:
       DestinationCidrBlock: 0.0.0.0/0
       GatewayId:
         Ref: InternetGateway
-
-  RGG3IX0R:
-    Type: 'AWS::ResourceGroups::Group'
-    Properties:
-      Name: !Sub '${AWS::StackName}-FridayHITT-ResourceGroup'
-      Description: Resource group for FridayHITT
-      Resources:
-        - !Ref WebServer1
-        - !Ref WebServer2
-        - !Ref DatabaseServer
-        - !Ref VPC
-        - !Ref InternetGateway
-        - !Ref AttachGateway
-        - !Ref PublicSubnet1
-        - !Ref PublicSubnet2
-        - !Ref PrivateSubnet1
-        - !Ref PrivateSubnet2
-        - !Ref DBSubnetGroup
-        - !Ref WebSecurityGroup
-        - !Ref DatabaseSecurityGroup
-        - !Ref PublicRouteTable
-        - !Ref PrivateRouteTable
-
-Outputs:
-  WebServer1PublicIP:
-    Description: Public IP address of WebServer1
-    Value: !GetAtt WebServer1.PublicIp
-  WebServer2PublicIP:
-    Description: Public IP address of WebServer2
-    Value: !GetAtt WebServer2.PublicIp
-
 

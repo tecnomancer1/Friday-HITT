@@ -56,24 +56,6 @@ Parameters:
     Type: List<Number>
     Description: 'Port numbers as a list: <web-server-port>,<database-port>'
     Default: '80,3306,22'
-  MinSize:
-    Description: Minimum number of instances in the Auto Scaling Group
-    Type: Number
-    Default: 2
-    MinValue: 1
-    MaxValue: 10
-  MaxSize:
-    Description: Maximum number of instances in the Auto Scaling Group
-    Type: Number
-    Default: 4
-    MinValue: 1
-    MaxValue: 10
-  DesiredCapacity:
-    Description: Desired number of instances in the Auto Scaling Group
-    Type: Number
-    Default: 2
-    MinValue: 1
-    MaxValue: 10
 
 Resources:
   MyNewKeyPair:
@@ -119,6 +101,17 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub '${AWS::StackName}-PublicSubnet1'
+
+  PublicSubnet2:
+    Type: 'AWS::EC2::Subnet'
+    Properties:
+      VpcId:
+        Ref: VPC
+      CidrBlock: 10.0.1.0/24
+      AvailabilityZone: eu-west-1b
+      Tags:
+        - Key: Name
+          Value: !Sub '${AWS::StackName}-PublicSubnet2'
 
   PrivateSubnet1:
     Type: 'AWS::EC2::Subnet'
@@ -246,15 +239,54 @@ Resources:
     Type: 'AWS::AutoScaling::AutoScalingGroup'
     Properties:
       LaunchConfigurationName: !Ref WebServerLaunchConfiguration
-      MinSize: !Ref MinSize
-      MaxSize: !Ref MaxSize
-      DesiredCapacity: !Ref DesiredCapacity
+      MinSize: 2
+      MaxSize: 4
+      DesiredCapacity: 2
       VPCZoneIdentifier:
         - !Ref PublicSubnet1
+        - !Ref PublicSubnet2
+      TargetGroupARNs:
+      - !Ref WebServerTargetGroup  # Associate with the target group
       Tags:
         - Key: Name
           Value: !Sub '${AWS::StackName}-WebServer'
           PropagateAtLaunch: true
+
+  WebServerLoadBalancer:
+   Type: 'AWS::ElasticLoadBalancingV2::LoadBalancer'
+   Properties:
+    Name: !Sub '${AWS::StackName}-WebServerNLB'
+    Subnets:
+      - Ref: PublicSubnet1
+      - Ref: PublicSubnet2
+    Scheme: internet-facing
+    LoadBalancerAttributes:
+      - Key: load_balancing.cross_zone.enabled
+        Value: 'true'
+    SecurityGroups:
+      - !GetAtt WebSecurityGroup.GroupId
+    Tags:
+      - Key: Name
+        Value: !Sub '${AWS::StackName}-WebServerNLB'
+
+  WebServerTargetGroup:
+   Type: 'AWS::ElasticLoadBalancingV2::TargetGroup'
+   Properties:
+    Name: !Sub '${AWS::StackName}-WebServerTargetGroup'
+    Port: 80
+    Protocol: HTTP
+    TargetType: instance
+    VpcId: !Ref VPC
+    HealthCheckIntervalSeconds: 30
+    HealthCheckPath: /var/www/html/index.html
+    HealthCheckPort: 80
+    HealthCheckProtocol: HTTP
+    HealthCheckTimeoutSeconds: 5
+    HealthyThresholdCount: 2
+    UnhealthyThresholdCount: 2
+    TargetGroupAttributes:
+      - Key: stickiness.enabled
+        Value: 'true'
 
   DatabaseServer:
     Type: 'AWS::RDS::DBInstance'

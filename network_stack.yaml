@@ -54,7 +54,7 @@ Parameters:
   SecurityGroupPorts:
     Type: List<Number>
     Description: 'Port numbers as a list: <web-server-port>,<database-port>'
-    Default: '80,3306'
+    Default: '80,3306, 22'
 
 Resources:
   MyNewKeyPair:
@@ -64,9 +64,7 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub '${AWS::StackName}-FridayHITT'
-    Metadata:
-      'AWS::CloudFormation::Designer':
-        id: 5d8566e1-4124-41c4-bd04-91688c42d0d6
+
   VPC:
     Type: 'AWS::EC2::VPC'
     Properties:
@@ -76,18 +74,14 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub '${AWS::StackName}-FridayHITT'
-    Metadata:
-      'AWS::CloudFormation::Designer':
-        id: f698a220-9e60-4b03-a59f-54872f53f679
+
   InternetGateway:
     Type: 'AWS::EC2::InternetGateway'
     Properties:
       Tags:
         - Key: Name
           Value: !Sub '${AWS::StackName}-FridayHITT'
-    Metadata:
-      'AWS::CloudFormation::Designer':
-        id: 497793d4-7f02-4707-a1b0-28162bcfe403
+
   AttachGateway:
     Type: 'AWS::EC2::VPCGatewayAttachment'
     Properties:
@@ -95,9 +89,7 @@ Resources:
         Ref: VPC
       InternetGatewayId:
         Ref: InternetGateway
-    Metadata:
-      'AWS::CloudFormation::Designer':
-        id: 7d5e8ef8-32de-4878-beb6-6a96cb07b45e
+
   PublicSubnet1:
     Type: 'AWS::EC2::Subnet'
     Properties:
@@ -108,9 +100,7 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub '${AWS::StackName}-FridayHITT'
-    Metadata:
-      'AWS::CloudFormation::Designer':
-        id: 3fbb3111-fb9c-4c63-9a79-4c3ec2d6744e
+
   PublicSubnet2:
     Type: 'AWS::EC2::Subnet'
     Properties:
@@ -121,9 +111,7 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub '${AWS::StackName}-FridayHITT'
-    Metadata:
-      'AWS::CloudFormation::Designer':
-        id: b80ae5e6-5388-4b8c-ac8a-ae20f8265e56
+
   PrivateSubnet1:
     Type: 'AWS::EC2::Subnet'
     Properties:
@@ -134,9 +122,7 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub '${AWS::StackName}-FridayHITT'
-    Metadata:
-      'AWS::CloudFormation::Designer':
-        id: 96cd2065-993c-4a26-9ce0-259ae67d9f39
+
   PrivateSubnet2:
     Type: 'AWS::EC2::Subnet'
     Properties:
@@ -147,9 +133,7 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub '${AWS::StackName}-FridayHITT'
-    Metadata:
-      'AWS::CloudFormation::Designer':
-        id: 4a93252c-108b-4b4f-8992-220baebd247d
+
   DBSubnetGroup:
     Type: 'AWS::RDS::DBSubnetGroup'
     Properties:
@@ -158,9 +142,6 @@ Resources:
       SubnetIds:
         - Ref: PrivateSubnet1
         - Ref: PrivateSubnet2
-    Metadata:
-      'AWS::CloudFormation::Designer':
-        id: d53149ba-2d63-4e9d-9901-586753a8e802
 
   JumpboxSecurityGroup:
     Type: 'AWS::EC2::SecurityGroup'
@@ -169,13 +150,13 @@ Resources:
       VpcId:
         Ref: VPC
       SecurityGroupIngress:
-        - CidrIp: 84.203.114.144/32
+        - CidrIp: 10.0.0.0/16
           IpProtocol: tcp
           FromPort: 22
           ToPort: 22
       Tags:
         - Key: Name
-          Value: FridayHITT-JumpboxSecurityGroup
+          Value: !Sub '${AWS::StackName}-FridayHITT'
 
   Jumpbox:
     Type: 'AWS::EC2::Instance'
@@ -188,15 +169,13 @@ Resources:
       ImageId: !Ref LatestAmiId
       Tags:
         - Key: Name
-          Value: FridayHITT-Jumpbox
+          Value: !Sub '${AWS::StackName}-FridayHITT'
       UserData:
         'Fn::Base64': !Sub |
           #!/bin/bash
           # Install and configure jumpbox here
           yum update -y
-          yum install -y some-useful-tools
           # Add any additional setup or configuration as needed
-  
 
   WebSecurityGroup:
     Type: 'AWS::EC2::SecurityGroup'
@@ -212,13 +191,11 @@ Resources:
         - CidrIp: 10.0.0.0/16
           IpProtocol: icmp
           FromPort: -1
-          ToPort: -1  # This allows all ICMP types and codes
+          ToPort: -1  # Allows all ICMP types and codes
       Tags:
         - Key: Name
           Value: !Sub '${AWS::StackName}-FridayHITT'
-    Metadata:
-      'AWS::CloudFormation::Designer':
-        id: 3050f62f-d98e-47ab-8cfe-0db6a2ef4928
+
   DatabaseSecurityGroup:
     Type: 'AWS::EC2::SecurityGroup'
     Properties:
@@ -237,9 +214,7 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub '${AWS::StackName}-FridayHITT'
-    Metadata:
-      'AWS::CloudFormation::Designer':
-        id: 9899a1e0-1c99-4135-bec5-d9a20ea1bca1
+
   WebServer1:
     Type: 'AWS::EC2::Instance'
     Properties:
@@ -270,9 +245,7 @@ Resources:
 
           echo "<html><h1>Hello, FridayHITT!</h1></html>" >
           /var/www/html/index.html
-    Metadata:
-      'AWS::CloudFormation::Designer':
-        id: a797145e-1008-48f1-9004-f0f9e9e6d401
+
   WebServer2:
     Type: 'AWS::EC2::Instance'
     Properties:
@@ -303,9 +276,7 @@ Resources:
 
           echo "<html><h1>Hello, FridayHITT!</h1></html>" >
           /var/www/html/index.html
-    Metadata:
-      'AWS::CloudFormation::Designer':
-        id: 78e4c7e7-90f0-420f-803a-853417a2202f
+
   DatabaseServer:
     Type: 'AWS::RDS::DBInstance'
     Properties:
@@ -314,11 +285,11 @@ Resources:
       DBInstanceClass:
         Ref: DBInstanceType
       Engine: mariadb
-      EngineVersion: '10.4' # Replace with your desired MariaDB version
+      EngineVersion: '10.4' # Set the desired MariaDB version
       MasterUsername:
-        Ref: DBMasterUsername # Use the parameter for the MasterUsername
+        Ref: DBMasterUsername # Set the MasterUsername
       MasterUserPassword:
-        Ref: DBMasterUserPassword # Use the parameter for the MasterUserPassword
+        Ref: DBMasterUserPassword # Set the MasterUserPassword
       MultiAZ: !Ref EnableMultiAZ
       DBSubnetGroupName:
         'Fn::Sub': FridayHITTDBSubnetGroup
@@ -327,9 +298,7 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub '${AWS::StackName}-FridayHITT'
-    Metadata:
-      'AWS::CloudFormation::Designer':
-        id: da949af5-73b0-43f7-8f01-21dc82c67b0c
+
   PublicRouteTable:
     Type: 'AWS::EC2::RouteTable'
     Properties:
@@ -338,9 +307,7 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub '${AWS::StackName}-FridayHITT'
-    Metadata:
-      'AWS::CloudFormation::Designer':
-        id: 0a670957-d512-4a52-af72-65b7e4d1f082
+
   PrivateRouteTable:
     Type: 'AWS::EC2::RouteTable'
     Properties:
@@ -349,9 +316,7 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub '${AWS::StackName}-FridayHITT'
-    Metadata:
-      'AWS::CloudFormation::Designer':
-        id: a0a7a8cf-43ac-45cb-a92b-84ec03deab20
+
   PublicRoute:
     Type: 'AWS::EC2::Route'
     DependsOn: AttachGateway
@@ -361,28 +326,7 @@ Resources:
       DestinationCidrBlock: 0.0.0.0/0
       GatewayId:
         Ref: InternetGateway
-    Metadata:
-      'AWS::CloudFormation::Designer':
-        id: 02913fbf-9170-493e-ae3d-6692575d4d4a
-  PrivateRoute1:
-    Type: 'AWS::EC2::Route'
-    Properties:
-      RouteTableId:
-        Ref: PrivateRouteTable
-      DestinationCidrBlock: 10.0.0.0/16
-    Metadata:
-      'AWS::CloudFormation::Designer':
-        id: abb3585c-4618-4118-b292-8e227d13b2fd
-  PrivateRoute2:
-    Type: 'AWS::EC2::Route'
-    Properties:
-      RouteTableId:
-        Ref: PrivateRouteTable
-      DestinationCidrBlock: 0.0.0.0/0
-      NatGatewayId: nat-gateway-id
-    Metadata:
-      'AWS::CloudFormation::Designer':
-        id: f31e4fa7-2294-45cb-8e23-0dbd6aa5c9bc
+
   RGG3IX0R:
     Type: 'AWS::ResourceGroups::Group'
     Properties:
@@ -404,9 +348,7 @@ Resources:
         - !Ref DatabaseSecurityGroup
         - !Ref PublicRouteTable
         - !Ref PrivateRouteTable
-    Metadata:
-      'AWS::CloudFormation::Designer':
-        id: 5674eeb5-fe36-40b1-a718-c50a634e8851
+
 Outputs:
   WebServer1PublicIP:
     Description: Public IP address of WebServer1
@@ -414,3 +356,5 @@ Outputs:
   WebServer2PublicIP:
     Description: Public IP address of WebServer2
     Value: !GetAtt WebServer2.PublicIp
+
+

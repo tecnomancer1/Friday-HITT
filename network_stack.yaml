@@ -98,6 +98,7 @@ Resources:
         Ref: VPC
       CidrBlock: 10.0.0.0/24
       AvailabilityZone: eu-west-1a
+      MapPublicIpOnLaunch: true  # Ensure a public IP is assigned to the jumpbox
       Tags:
         - Key: Name
           Value: !Sub '${AWS::StackName}-PublicSubnet1'
@@ -168,6 +169,7 @@ Resources:
       SubnetId: !Ref PublicSubnet1
       KeyName: !Ref NewKeyPairName
       ImageId: !Ref LatestAmiId
+      EC2InstanceConnect: true  # Enable EC2 Instance Connect
       Tags:
         - Key: Name
           Value: !Sub '${AWS::StackName}-Jumpbox'
@@ -224,6 +226,7 @@ Resources:
       KeyName: !Ref NewKeyPairName
       SecurityGroups:
         - !GetAtt WebSecurityGroup.GroupId
+      EC2InstanceConnect: true  # Enable EC2 Instance Connect
       UserData:
         'Fn::Base64': !Sub |
           #!/bin/bash
@@ -306,6 +309,7 @@ Resources:
         'Fn::Sub': FridayHITTDBSubnetGroup
       VPCSecurityGroups:
         - !Ref DatabaseSecurityGroup
+      EC2InstanceConnect: true  # Enable EC2 Instance Connect
       Tags:
         - Key: Name
           Value: !Sub '${AWS::StackName}-DatabaseServer'
@@ -320,6 +324,10 @@ Resources:
           Value: !Sub '${AWS::StackName}-PublicRouteTable'
 
 Outputs:
+  JumpboxPublicIPAddress:
+    Description: Public IP address of the Jumpbox
+    Value: !GetAtt Jumpbox.PublicIp
+
   NetworkLoadBalancerDNSName:
    Description: DNS name of the Network Load Balancer
    Value: !GetAtt WebServerLoadBalancer.DNSName

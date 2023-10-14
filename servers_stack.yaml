@@ -1,0 +1,238 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: FridayHITT Server Stack
+
+Parameters:
+  VpcId:
+    Description: VPC ID
+    Type: AWS::EC2::VPC::Id
+  InstanceType:
+    Description: EC2 instance type
+    Type: String
+    Default: t2.micro
+    AllowedValues:
+      - t2.micro
+      - t2.small
+    ConstraintDescription: Must be a valid EC2 instance type
+  DBInstanceType:
+    Description: RDS instance type
+    Type: String
+    Default: db.t2.micro
+    AllowedValues:
+      - db.t2.micro
+      - db.t2.small
+    ConstraintDescription: Must be a valid RDS instance type
+  LatestAmiId:
+    Type: 'AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>'
+    Default: /aws/service/ami-amazon-linux-latest/amzn2-ami-minimal-hvm-x86_64-ebs
+  NewKeyPairName:
+    Description: Name of a new EC2 key pair to create
+    Type: String
+    Default: my-new-key-pair
+  DBMasterUsername:
+    Description: Master username for the RDS database
+    Type: String
+    AllowedPattern: '[a-zA-Z][a-zA-Z0-9]*'
+    MaxLength: 10
+    Default: dbusername
+  DBMasterUserPassword:
+    Description: Master user password for the RDS database
+    Type: String
+    MinLength: 8
+    NoEcho: true
+    Default: dbpassword
+  EnableMultiAZ:
+    Description: Enable Multi-AZ deployment for the RDS database
+    Type: String
+    Default: false
+    AllowedValues:
+      - true
+      - false
+    ConstraintDescription: Must be either 'true' or 'false'
+  AllocatedStorage:
+    Description: Allocated storage for the RDS database
+    Type: Number
+    MinValue: 10
+    MaxValue: 20
+    ConstraintDescription: Allowed database size between 10 and 20
+    Default: 10
+  SecurityGroupPorts:
+    Type: List<Number>
+    Description: 'Port numbers as a list: <web-server-port>,<database-port>'
+    Default: '80,3306,22'
+  PublicSubnet1Id:
+    Description: ID of the public subnet 1
+    Type: AWS::EC2::Subnet::Id
+  PublicSubnet2Id:
+    Description: ID of the public subnet 2
+    Type: AWS::EC2::Subnet::Id
+  PrivateSubnet1Id:
+    Description: ID of the private subnet 1
+    Type: AWS::EC2::Subnet::Id
+  PrivateSubnet2Id:
+    Description: ID of the private subnet 2
+    Type: AWS::EC2::Subnet::Id
+
+Resources:
+  MyNewKeyPair:
+    Type: 'AWS::EC2::KeyPair'
+    Properties:
+      KeyName: !Ref NewKeyPairName
+      Tags:
+        - Key: Name
+          Value: !Sub '${AWS::StackName}-KeyPair'
+  JumpboxSecurityGroup:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      GroupDescription: Security group for the jumpbox server
+      VpcId: !Ref VpcId
+      SecurityGroupIngress:
+        - CidrIp: 10.0.0.0/16
+          IpProtocol: tcp
+          FromPort: !Select [2, !Ref SecurityGroupPorts]
+          ToPort: !Select [2, !Ref SecurityGroupPorts]
+      Tags:
+        - Key: Name
+          Value: !Sub '${AWS::StackName}-JumpboxSecurityGroup'
+  Jumpbox:
+    Type: 'AWS::EC2::Instance'
+    Properties:
+      InstanceType: !Ref InstanceType
+      SecurityGroupIds:
+        - !GetAtt JumpboxSecurityGroup.GroupId
+      SubnetId: !Ref PublicSubnet1Id
+      KeyName: !Ref NewKeyPairName
+      ImageId: !Ref LatestAmiId
+      Tags:
+        - Key: Name
+          Value: !Sub '${AWS::StackName}-Jumpbox'
+      UserData:
+        'Fn::Base64': !Sub |
+          #!/bin/bash
+          # Install and configure jumpbox here
+          yum update -y
+          # Add any additional setup or configuration as needed
+  WebSecurityGroup:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      GroupDescription: Security group for the web server
+      VpcId: !Ref VpcId
+      SecurityGroupIngress:
+        - CidrIp: 0.0.0.0/0
+          IpProtocol: tcp
+          FromPort: !Select [0, !Ref SecurityGroupPorts]
+          ToPort: !Select [0, !Ref SecurityGroupPorts]
+        - CidrIp: 10.0.0.0/16
+          IpProtocol: icmp
+          FromPort: -1
+          ToPort: -1
+      Tags:
+        - Key: Name
+          Value: !Sub '${AWS::StackName}-WebSecurityGroup'
+  DatabaseSecurityGroup:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      GroupDescription: Security group for the database server
+      VpcId: !Ref VpcId
+      SecurityGroupIngress:
+        - CidrIp: 10.0.0.0/16
+          IpProtocol: tcp
+          FromPort: !Select [1, !Ref SecurityGroupPorts]
+          ToPort: !Select [1, !Ref SecurityGroupPorts]
+        - CidrIp: 10.0.0.0/16
+          IpProtocol: icmp
+          FromPort: -1
+          ToPort: -1
+      Tags:
+        - Key: Name
+          Value: !Sub '${AWS::StackName}-DatabaseSecurityGroup'
+  WebServerLaunchConfiguration:
+    Type: 'AWS::AutoScaling::LaunchConfiguration'
+    Properties:
+      ImageId: !Ref LatestAmiId
+      InstanceType: !Ref InstanceType
+      KeyName: !Ref NewKeyPairName
+      SecurityGroups:
+        - !GetAtt WebSecurityGroup.GroupId
+      UserData:
+        'Fn::Base64': !Sub |
+          #!/bin/bash
+          # Install and configure web server here
+          yum update -y
+          yum install -y httpd
+          systemctl start httpd
+          systemctl enable httpd
+          echo "<html><h1>Hello, FridayHITT!</h1></html>" > /var/www/html/index.html
+  WebServerAutoScalingGroup:
+    Type: 'AWS::AutoScaling::AutoScalingGroup'
+    Properties:
+      LaunchConfigurationName: !Ref WebServerLaunchConfiguration
+      MinSize: 2
+      MaxSize: 4
+      DesiredCapacity: 2
+      VPCZoneIdentifier:
+        - !Ref PublicSubnet1Id
+        - !Ref PublicSubnet2Id
+      TargetGroupARNs:
+        - !Ref WebServerTargetGroup
+      Tags:
+        - Key: Name
+          Value: !Sub '${AWS::StackName}-WebServer'
+          PropagateAtLaunch: true
+  WebServerLoadBalancer:
+    Type: 'AWS::ElasticLoadBalancingV2::LoadBalancer'
+    Properties:
+      Name: !Sub '${AWS::StackName}-WebServerNLB'
+      Subnets:
+        - !Ref PublicSubnet1Id
+        - !Ref PublicSubnet2Id
+      Scheme: internet-facing
+      LoadBalancerAttributes:
+        - Key: load_balancing.cross_zone.enabled
+          Value: 'true'
+      SecurityGroups:
+        - !GetAtt WebSecurityGroup.GroupId
+      Tags:
+        - Key: Name
+          Value: !Sub '${AWS::StackName}-WebServerNLB'
+  WebServerTargetGroup:
+    Type: 'AWS::ElasticLoadBalancingV2::TargetGroup'
+    Properties:
+      Name: !Sub '${AWS::StackName}-WebServerTargetGroup'
+      Port: 80
+      Protocol: HTTP
+      TargetType: instance
+      VpcId: !Ref VpcId
+      HealthCheckIntervalSeconds: 30
+      HealthCheckPath: /var/www/html/index.html
+      HealthCheckPort: 80
+      HealthCheckProtocol: HTTP
+      HealthCheckTimeoutSeconds: 5
+      HealthyThresholdCount: 2
+      UnhealthyThresholdCount: 2
+      TargetGroupAttributes:
+        - Key: stickiness.enabled
+          Value: 'true'
+  DatabaseServer:
+    Type: 'AWS::RDS::DBInstance'
+    Properties:
+      AllocatedStorage: !Ref AllocatedStorage
+      DBInstanceClass: !Ref DBInstanceType
+      Engine: mariadb
+      EngineVersion: '10.4'
+      MasterUsername: !Ref DBMasterUsername
+      MasterUserPassword: !Ref DBMasterUserPassword
+      MultiAZ: !Ref EnableMultiAZ
+      DBSubnetGroupName: 'Fn::Sub': FridayHITTDBSubnetGroup
+      VPCSecurityGroups:
+        - !GetAtt DatabaseSecurityGroup.GroupId
+      Tags:
+        - Key: Name
+          Value: !Sub '${AWS::StackName}-DatabaseServer'
+
+Outputs:
+  JumpboxPublicIPAddress:
+    Description: Public IP address of the Jumpbox
+    Value: !GetAtt Jumpbox.PublicIp
+  NetworkLoadBalancerDNSName:
+    Description: DNS name of the Network Load Balancer
+    Value: !GetAtt WebServerLoadBalancer.DNSName

@@ -10,6 +10,8 @@ Parameters:
       - t2.micro
       - t2.small
     ConstraintDescription: Must be a valid EC2 instance type
+
+  # DBInstanceType parameter for RDS instance type
   DBInstanceType:
     Description: RDS instance type
     Type: String
@@ -18,25 +20,35 @@ Parameters:
       - db.t2.micro
       - db.t2.small
     ConstraintDescription: Must be a valid RDS instance type
+
+  # LatestAmiId parameter for the latest Amazon Linux AMI
   LatestAmiId:
     Type: 'AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>'
     Default: /aws/service/ami-amazon-linux-latest/amzn2-ami-minimal-hvm-x86_64-ebs
+
+  # NewKeyPairName parameter for the name of a new EC2 key pair
   NewKeyPairName:
     Description: Name of a new EC2 key pair to create
     Type: String
     Default: my-new-key-pair
+
+  # DBMasterUsername parameter for the RDS database master username
   DBMasterUsername:
     Description: Master username for the RDS database
     Type: String
     AllowedPattern: '[a-zA-Z][a-zA-Z0-9]*'
     MaxLength: 10
     Default: dbusername
+
+  # DBMasterUserPassword parameter for the RDS database master user password
   DBMasterUserPassword:
     Description: Master user password for the RDS database
     Type: String
     MinLength: 8
     NoEcho: true
     Default: dbpassword
+
+  # EnableMultiAZ parameter for enabling Multi-AZ deployment for RDS
   EnableMultiAZ:
     Description: Enable Multi-AZ deployment for the RDS database
     Type: String
@@ -45,6 +57,8 @@ Parameters:
       - true
       - false
     ConstraintDescription: Must be either 'true' or 'false'
+
+  # AllocatedStorage parameter for the allocated storage size of the RDS database
   AllocatedStorage:
     Description: Allocated storage for the RDS database
     Type: Number
@@ -52,12 +66,16 @@ Parameters:
     MaxValue: 20
     ConstraintDescription: Allowed database size between 10 and 20
     Default: 10
+
+  # SecurityGroupPorts parameter for defining port numbers
   SecurityGroupPorts:
     Type: List<Number>
     Description: 'Port numbers as a list: <web-server-port>,<database-port>'
     Default: '80,3306,22'
 
 Resources:
+
+  # MyNewKeyPair resource for creating a new EC2 key pair
   MyNewKeyPair:
     Type: 'AWS::EC2::KeyPair'
     Properties:
@@ -66,6 +84,7 @@ Resources:
         - Key: Name
           Value: !Sub '${AWS::StackName}-KeyPair'
 
+  # VPC resource for creating a Virtual Private Cloud
   VPC:
     Type: 'AWS::EC2::VPC'
     Properties:
@@ -76,6 +95,7 @@ Resources:
         - Key: Name
           Value: !Sub '${AWS::StackName}-VPC'
 
+  # InternetGateway resource for creating an internet gateway
   InternetGateway:
     Type: 'AWS::EC2::InternetGateway'
     Properties:
@@ -83,6 +103,7 @@ Resources:
         - Key: Name
           Value: !Sub '${AWS::StackName}-InternetGateway'
 
+  # AttachGateway resource for attaching the internet gateway to the VPC
   AttachGateway:
     Type: 'AWS::EC2::VPCGatewayAttachment'
     Properties:
@@ -91,6 +112,7 @@ Resources:
       InternetGatewayId:
         Ref: InternetGateway
 
+  # PublicSubnet1 resource for creating a public subnet in Availability Zone 1
   PublicSubnet1:
     Type: 'AWS::EC2::Subnet'
     Properties:
@@ -103,6 +125,7 @@ Resources:
         - Key: Name
           Value: !Sub '${AWS::StackName}-PublicSubnet1'
 
+  # PublicSubnet2 resource for creating a public subnet in Availability Zone 2
   PublicSubnet2:
     Type: 'AWS::EC2::Subnet'
     Properties:
@@ -114,6 +137,7 @@ Resources:
         - Key: Name
           Value: !Sub '${AWS::StackName}-PublicSubnet2'
 
+  # PrivateSubnet1 resource for creating a private subnet in Availability Zone 1
   PrivateSubnet1:
     Type: 'AWS::EC2::Subnet'
     Properties:
@@ -125,6 +149,7 @@ Resources:
         - Key: Name
           Value: !Sub '${AWS::StackName}-PrivateSubnet1'
 
+  # PrivateSubnet2 resource for creating a private subnet in Availability Zone 2
   PrivateSubnet2:
     Type: 'AWS::EC2::Subnet'
     Properties:
@@ -136,6 +161,7 @@ Resources:
         - Key: Name
           Value: !Sub '${AWS::StackName}-PrivateSubnet2'
 
+  # DBSubnetGroup resource for creating a database subnet group
   DBSubnetGroup:
     Type: 'AWS::RDS::DBSubnetGroup'
     Properties:
@@ -145,6 +171,7 @@ Resources:
         - Ref: PrivateSubnet1
         - Ref: PrivateSubnet2
 
+  # JumpboxSecurityGroup resource for creating a security group for the jumpbox
   JumpboxSecurityGroup:
     Type: 'AWS::EC2::SecurityGroup'
     Properties:
@@ -160,6 +187,7 @@ Resources:
         - Key: Name
           Value: !Sub '${AWS::StackName}-JumpboxSecurityGroup'
 
+  # Jumpbox resource for creating an EC2 instance for the jumpbox
   Jumpbox:
     Type: 'AWS::EC2::Instance'
     Properties:
@@ -179,6 +207,7 @@ Resources:
           yum update -y
           # Add any additional setup or configuration as needed
 
+  # WebSecurityGroup resource for creating a security group for the web server
   WebSecurityGroup:
     Type: 'AWS::EC2::SecurityGroup'
     Properties:
@@ -198,6 +227,7 @@ Resources:
         - Key: Name
           Value: !Sub '${AWS::StackName}-WebSecurityGroup'
 
+  # DatabaseSecurityGroup resource for creating a security group for the database server
   DatabaseSecurityGroup:
     Type: 'AWS::EC2::SecurityGroup'
     Properties:
@@ -217,6 +247,7 @@ Resources:
         - Key: Name
           Value: !Sub '${AWS::StackName}-DatabaseSecurityGroup'
 
+  # WebServerLaunchConfiguration resource for creating an Auto Scaling launch configuration for the web server
   WebServerLaunchConfiguration:
     Type: 'AWS::AutoScaling::LaunchConfiguration'
     Properties:
@@ -236,6 +267,7 @@ Resources:
           echo "<html><h1>Hello, FridayHITT!</h1></html>" >
           /var/www/html/index.html
 
+  # WebServerAutoScalingGroup resource for creating an Auto Scaling group for the web server
   WebServerAutoScalingGroup:
     Type: 'AWS::AutoScaling::AutoScalingGroup'
     Properties:
@@ -247,61 +279,64 @@ Resources:
         - !Ref PublicSubnet1
         - !Ref PublicSubnet2
       TargetGroupARNs:
-      - !Ref WebServerTargetGroup  # Associate with the target group
+        - !Ref WebServerTargetGroup  # Associate with the target group
       Tags:
         - Key: Name
           Value: !Sub '${AWS::StackName}-WebServer'
           PropagateAtLaunch: true
 
+  # WebServerLoadBalancer resource for creating a Network Load Balancer
   WebServerLoadBalancer:
-   Type: 'AWS::ElasticLoadBalancingV2::LoadBalancer'
-   Properties:
-    Name: !Sub '${AWS::StackName}-WebServerNLB'
-    Subnets:
-      - Ref: PublicSubnet1
-      - Ref: PublicSubnet2
-    Scheme: internet-facing
-    LoadBalancerAttributes:
-      - Key: load_balancing.cross_zone.enabled
-        Value: 'true'
-    SecurityGroups:
-      - !GetAtt WebSecurityGroup.GroupId
-    Tags:
-      - Key: Name
-        Value: !Sub '${AWS::StackName}-WebServerNLB'
+    Type: 'AWS::ElasticLoadBalancingV2::LoadBalancer'
+    Properties:
+      Name: !Sub '${AWS::StackName}-WebServerNLB'
+      Subnets:
+        - Ref: PublicSubnet1
+        - Ref: PublicSubnet2
+      Scheme: internet-facing
+      LoadBalancerAttributes:
+        - Key: load_balancing.cross_zone.enabled
+          Value: 'true'
+      SecurityGroups:
+        - !GetAtt WebSecurityGroup.GroupId
+      Tags:
+        - Key: Name
+          Value: !Sub '${AWS::StackName}-WebServerNLB'
 
+  # WebServerTargetGroup resource for creating a target group for the web server
   WebServerTargetGroup:
-   Type: 'AWS::ElasticLoadBalancingV2::TargetGroup'
-   Properties:
-    Name: !Sub '${AWS::StackName}-WebServerTargetGroup'
-    Port: 80
-    Protocol: HTTP
-    TargetType: instance
-    VpcId: !Ref VPC
-    HealthCheckIntervalSeconds: 30
-    HealthCheckPath: /var/www/html/index.html
-    HealthCheckPort: 80
-    HealthCheckProtocol: HTTP
-    HealthCheckTimeoutSeconds: 5
-    HealthyThresholdCount: 2
-    UnhealthyThresholdCount: 2
-    TargetGroupAttributes:
-      - Key: stickiness.enabled
-        Value: 'true'
+    Type: 'AWS::ElasticLoadBalancingV2::TargetGroup'
+    Properties:
+      Name: !Sub '${AWS::StackName}-WebServerTargetGroup'
+      Port: 80
+      Protocol: HTTP
+      TargetType: instance
+      VpcId: !Ref VPC
+      HealthCheckIntervalSeconds: 30
+      HealthCheckPath: /var/www/html/index.html
+      HealthCheckPort: 80
+      HealthCheckProtocol: HTTP
+      HealthCheckTimeoutSeconds: 5
+      HealthyThresholdCount: 2
+      UnhealthyThresholdCount: 2
+      TargetGroupAttributes:
+        - Key: stickiness.enabled
+          Value: 'true'
 
+  # DatabaseServer resource for creating an RDS database instance
   DatabaseServer:
     Type: 'AWS::RDS::DBInstance'
     Properties:
       AllocatedStorage:
-        Ref: AllocatedStorage # Use the parameter for AllocatedStorage
+        Ref: AllocatedStorage  # Use the parameter for AllocatedStorage
       DBInstanceClass:
         Ref: DBInstanceType
       Engine: mariadb
-      EngineVersion: '10.4' # Set the desired MariaDB version
+      EngineVersion: '10.4'  # Set the desired MariaDB version
       MasterUsername:
-        Ref: DBMasterUsername # Set the MasterUsername
+        Ref: DBMasterUsername  # Set the MasterUsername
       MasterUserPassword:
-        Ref: DBMasterUserPassword # Set the MasterUserPassword
+        Ref: DBMasterUserPassword  # Set the MasterUserPassword
       MultiAZ: !Ref EnableMultiAZ
       DBSubnetGroupName:
         'Fn::Sub': FridayHITTDBSubnetGroup
@@ -311,6 +346,7 @@ Resources:
         - Key: Name
           Value: !Sub '${AWS::StackName}-DatabaseServer'
 
+  # PublicRouteTable resource for creating a public route table
   PublicRouteTable:
     Type: 'AWS::EC2::RouteTable'
     Properties:
@@ -320,12 +356,14 @@ Resources:
         - Key: Name
           Value: !Sub '${AWS::StackName}-PublicRouteTable'
 
+  # PublicRouteTableAssociation1 resource for associating PublicSubnet1 with the public route table
   PublicRouteTableAssociation1:
     Type: 'AWS::EC2::SubnetRouteTableAssociation'
     Properties:
       SubnetId: !Ref PublicSubnet1
       RouteTableId: !Ref PublicRouteTable
 
+  # PublicRouteTableAssociation2 resource for associating PublicSubnet2 with the public route table
   PublicRouteTableAssociation2:
     Type: 'AWS::EC2::SubnetRouteTableAssociation'
     Properties:
@@ -333,10 +371,13 @@ Resources:
       RouteTableId: !Ref PublicRouteTable
 
 Outputs:
+
+  # JumpboxPublicIPAddress output for the public IP address of the Jumpbox
   JumpboxPublicIPAddress:
     Description: Public IP address of the Jumpbox
     Value: !GetAtt Jumpbox.PublicIp
 
+  # NetworkLoadBalancerDNSName output for the DNS name of the Network Load Balancer
   NetworkLoadBalancerDNSName:
-   Description: DNS name of the Network Load Balancer
-   Value: !GetAtt WebServerLoadBalancer.DNSName
+    Description: DNS name of the Network Load Balancer
+    Value: !GetAtt WebServerLoadBalancer.DNSName

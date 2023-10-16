@@ -103,7 +103,7 @@ Resources:
       DBSubnetGroupDescription: Subnet group for RDS
       SubnetIds: !Split
         - ','
-        - Fn::ImportValue: !Sub '${NetworkStackName}-PublicSubnets'
+        - Fn::ImportValue: !Sub '${NetworkStackName}-FridayHITT-PublicSubnets'
 
   Jumpbox:
     Type: 'AWS::EC2::Instance'
@@ -151,7 +151,7 @@ Resources:
       DesiredCapacity: 2
       VPCZoneIdentifier: !Split
         - ','
-        - Fn::ImportValue: !Sub '${NetworkStackName}-PublicSubnets'
+        - Fn::ImportValue: !Sub '${NetworkStackName}-FridayHITT-PublicSubnets'
       TargetGroupARNs:
         - !Ref WebServerTargetGroup
       Tags:
@@ -165,7 +165,7 @@ Resources:
       Name: !Sub '${AWS::StackName}-FridayHITT-WebServerNLB'
       SubnetIds: !Split
         - ','
-        - Fn::ImportValue: !Sub '${NetworkStackName}-PublicSubnets'
+        - Fn::ImportValue: !Sub '${NetworkStackName}-FridayHITT-PublicSubnets'
       Scheme: internet-facing
       LoadBalancerAttributes:
         - Key: load_balancing.cross_zone.enabled

@@ -1,7 +1,26 @@
 AWSTemplateFormatVersion: 2010-09-09
 Description: FridayHITT Server Stack
 
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      -
+        Label:
+          default: Database Servers Settings
+        Parameters:
+          - AllocatedStorage
+          - DBInstanceType
+      -
+        Label:
+          default: Network Stack
+        Parameters:
+          - NetworkStackName
+
+
 Parameters:
+  NetworkStackName:
+    Type: String
+    Description: FridayHITT network stack referenced
   VpcId:
     Description: VPC ID
     Type: AWS::EC2::VPC::Id
@@ -77,12 +96,21 @@ Resources:
         - Key: Name
           Value: !Sub '${AWS::StackName}-FridayHITT-KeyPair'
 
+  DBSubnetGroup:
+    Type: 'AWS::RDS::DBSubnetGroup'
+    Properties:
+      DBSubnetGroupName: FridayHITTDBSubnetGroup
+      DBSubnetGroupDescription: Subnet group for RDS
+      SubnetIds: !Split
+        - ','
+        - Fn::ImportValue: !Sub '${NetworkStackName}-PublicSubnets'
+
   Jumpbox:
     Type: 'AWS::EC2::Instance'
     Properties:
       InstanceType: !Ref InstanceType
       SecurityGroupIds:
-        - !GetAtt JumpboxSecurityGroup.GroupId
+        - Fn::ImportValue: !Sub '${NetworkStackName}-FridayHITT-JumpboxSecurityGroup'
       SubnetId: !Ref PublicSubnet1Id
       KeyName: !Ref NewKeyPairName
       ImageId: !Ref LatestAmiId
@@ -103,7 +131,7 @@ Resources:
       InstanceType: !Ref InstanceType
       KeyName: !Ref NewKeyPairName
       SecurityGroups:
-        - !GetAtt WebSecurityGroup.GroupId
+        - Fn::ImportValue: !Sub '${NetworkStackName}-FridayHITT-WebSecurityGroup'
       UserData:
         'Fn::Base64': !Sub |
           #!/bin/bash
@@ -121,9 +149,9 @@ Resources:
       MinSize: 2
       MaxSize: 4
       DesiredCapacity: 2
-      VPCZoneIdentifier:
-        - !Ref PublicSubnet1Id
-        - !Ref PublicSubnet2Id
+      VPCZoneIdentifier: !Split
+        - ','
+        - Fn::ImportValue: !Sub '${NetworkStackName}-PublicSubnets'
       TargetGroupARNs:
         - !Ref WebServerTargetGroup
       Tags:
@@ -135,15 +163,15 @@ Resources:
     Type: 'AWS::ElasticLoadBalancingV2::LoadBalancer'
     Properties:
       Name: !Sub '${AWS::StackName}-FridayHITT-WebServerNLB'
-      Subnets:
-        - !Ref PublicSubnet1Id
-        - !Ref PublicSubnet2Id
+      SubnetIds: !Split
+        - ','
+        - Fn::ImportValue: !Sub '${NetworkStackName}-PublicSubnets'
       Scheme: internet-facing
       LoadBalancerAttributes:
         - Key: load_balancing.cross_zone.enabled
           Value: 'true'
       SecurityGroups:
-        - !GetAtt WebSecurityGroup.GroupId
+        - Fn::ImportValue: !Sub '${NetworkStackName}-FridayHITT-WebSecurityGroup'
       Tags:
         - Key: Name
           Value: !Sub '${AWS::StackName}-FridayHITT-WebServerNLB'
@@ -179,7 +207,7 @@ Resources:
       MultiAZ: !Ref EnableMultiAZ
       DBSubnetGroupName: 'Fn::Sub': FridayHITTDBSubnetGroup
       VPCSecurityGroups:
-        - !GetAtt DatabaseSecurityGroup.GroupId
+        - Fn::ImportValue: !Sub '${NetworkStackName}-FridayHITT-DbSecurityGroup'
       Tags:
         - Key: Name
           Value: !Sub '${AWS::StackName}-FridayHITT-DatabaseServer'

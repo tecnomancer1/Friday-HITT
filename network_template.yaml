@@ -80,15 +80,6 @@ Resources:
         - Key: Name
           Value: !Sub '${AWS::StackName}-FridayHITT-PrivateSubnet2'
 
-  DBSubnetGroup:
-    Type: 'AWS::RDS::DBSubnetGroup'
-    Properties:
-      DBSubnetGroupName: FridayHITTDBSubnetGroup
-      DBSubnetGroupDescription: Subnet group for RDS
-      SubnetIds:
-        - Ref: PrivateSubnet1
-        - Ref: PrivateSubnet2
-
   # Security groups ---
   JumpboxSecurityGroup:
     Type: 'AWS::EC2::SecurityGroup'

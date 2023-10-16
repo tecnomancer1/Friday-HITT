@@ -55,10 +55,6 @@ Parameters:
     MaxValue: 20
     ConstraintDescription: Allowed database size between 10 and 20
     Default: 10
-  SecurityGroupPorts:
-    Type: List<Number>
-    Description: 'Port numbers as a list: <web-server-port>,<database-port>'
-    Default: '80,3306,22'
   PublicSubnet1Id:
     Description: ID of the public subnet 1
     Type: AWS::EC2::Subnet::Id
@@ -79,20 +75,8 @@ Resources:
       KeyName: !Ref NewKeyPairName
       Tags:
         - Key: Name
-          Value: !Sub '${AWS::StackName}-KeyPair'
-  JumpboxSecurityGroup:
-    Type: 'AWS::EC2::SecurityGroup'
-    Properties:
-      GroupDescription: Security group for the jumpbox server
-      VpcId: !Ref VpcId
-      SecurityGroupIngress:
-        - CidrIp: 10.0.0.0/16
-          IpProtocol: tcp
-          FromPort: !Select [2, !Ref SecurityGroupPorts]
-          ToPort: !Select [2, !Ref SecurityGroupPorts]
-      Tags:
-        - Key: Name
-          Value: !Sub '${AWS::StackName}-JumpboxSecurityGroup'
+          Value: !Sub '${AWS::StackName}-FridayHITT-KeyPair'
+
   Jumpbox:
     Type: 'AWS::EC2::Instance'
     Properties:
@@ -104,47 +88,14 @@ Resources:
       ImageId: !Ref LatestAmiId
       Tags:
         - Key: Name
-          Value: !Sub '${AWS::StackName}-Jumpbox'
+          Value: !Sub '${AWS::StackName}-FridayHITT-Jumpbox'
       UserData:
         'Fn::Base64': !Sub |
           #!/bin/bash
           # Install and configure jumpbox here
           yum update -y
           # Add any additional setup or configuration as needed
-  WebSecurityGroup:
-    Type: 'AWS::EC2::SecurityGroup'
-    Properties:
-      GroupDescription: Security group for the web server
-      VpcId: !Ref VpcId
-      SecurityGroupIngress:
-        - CidrIp: 0.0.0.0/0
-          IpProtocol: tcp
-          FromPort: !Select [0, !Ref SecurityGroupPorts]
-          ToPort: !Select [0, !Ref SecurityGroupPorts]
-        - CidrIp: 10.0.0.0/16
-          IpProtocol: icmp
-          FromPort: -1
-          ToPort: -1
-      Tags:
-        - Key: Name
-          Value: !Sub '${AWS::StackName}-WebSecurityGroup'
-  DatabaseSecurityGroup:
-    Type: 'AWS::EC2::SecurityGroup'
-    Properties:
-      GroupDescription: Security group for the database server
-      VpcId: !Ref VpcId
-      SecurityGroupIngress:
-        - CidrIp: 10.0.0.0/16
-          IpProtocol: tcp
-          FromPort: !Select [1, !Ref SecurityGroupPorts]
-          ToPort: !Select [1, !Ref SecurityGroupPorts]
-        - CidrIp: 10.0.0.0/16
-          IpProtocol: icmp
-          FromPort: -1
-          ToPort: -1
-      Tags:
-        - Key: Name
-          Value: !Sub '${AWS::StackName}-DatabaseSecurityGroup'
+
   WebServerLaunchConfiguration:
     Type: 'AWS::AutoScaling::LaunchConfiguration'
     Properties:
@@ -162,6 +113,7 @@ Resources:
           systemctl start httpd
           systemctl enable httpd
           echo "<html><h1>Hello, FridayHITT!</h1></html>" > /var/www/html/index.html
+
   WebServerAutoScalingGroup:
     Type: 'AWS::AutoScaling::AutoScalingGroup'
     Properties:
@@ -176,12 +128,13 @@ Resources:
         - !Ref WebServerTargetGroup
       Tags:
         - Key: Name
-          Value: !Sub '${AWS::StackName}-WebServer'
+          Value: !Sub '${AWS::StackName}-FridayHITT-WebServer'
           PropagateAtLaunch: true
+
   WebServerLoadBalancer:
     Type: 'AWS::ElasticLoadBalancingV2::LoadBalancer'
     Properties:
-      Name: !Sub '${AWS::StackName}-WebServerNLB'
+      Name: !Sub '${AWS::StackName}-FridayHITT-WebServerNLB'
       Subnets:
         - !Ref PublicSubnet1Id
         - !Ref PublicSubnet2Id
@@ -193,11 +146,12 @@ Resources:
         - !GetAtt WebSecurityGroup.GroupId
       Tags:
         - Key: Name
-          Value: !Sub '${AWS::StackName}-WebServerNLB'
+          Value: !Sub '${AWS::StackName}-FridayHITT-WebServerNLB'
+
   WebServerTargetGroup:
     Type: 'AWS::ElasticLoadBalancingV2::TargetGroup'
     Properties:
-      Name: !Sub '${AWS::StackName}-WebServerTargetGroup'
+      Name: !Sub '${AWS::StackName}-FridayHITT-WebServerTargetGroup'
       Port: 80
       Protocol: HTTP
       TargetType: instance
@@ -212,6 +166,7 @@ Resources:
       TargetGroupAttributes:
         - Key: stickiness.enabled
           Value: 'true'
+
   DatabaseServer:
     Type: 'AWS::RDS::DBInstance'
     Properties:
@@ -227,12 +182,13 @@ Resources:
         - !GetAtt DatabaseSecurityGroup.GroupId
       Tags:
         - Key: Name
-          Value: !Sub '${AWS::StackName}-DatabaseServer'
+          Value: !Sub '${AWS::StackName}-FridayHITT-DatabaseServer'
 
 Outputs:
   JumpboxPublicIPAddress:
     Description: Public IP address of the Jumpbox
     Value: !GetAtt Jumpbox.PublicIp
+
   NetworkLoadBalancerDNSName:
     Description: DNS name of the Network Load Balancer
     Value: !GetAtt WebServerLoadBalancer.DNSName

@@ -26,19 +26,13 @@ Parameters:
     Type: AWS::EC2::VPC::Id
   InstanceType:
     Description: EC2 instance type
-    Type: String
-    Default: t2.micro
-    AllowedValues:
-      - t2.micro
-      - t2.small
+    Type: 'AWS::SSM::Parameter::Value<String>'
+    Default: /dev/EC2/WebInstanceType
     ConstraintDescription: Must be a valid EC2 instance type
   DBInstanceType:
     Description: RDS instance type
-    Type: String
-    Default: db.t2.micro
-    AllowedValues:
-      - db.t2.micro
-      - db.t2.small
+    Type: 'AWS::SSM::Parameter::Value<String>'
+    Default: /dev/EC2/DBInstanceType
     ConstraintDescription: Must be a valid RDS instance type
   LatestAmiId:
     Type: 'AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>'

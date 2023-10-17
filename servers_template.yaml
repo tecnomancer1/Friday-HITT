@@ -103,7 +103,7 @@ Resources:
       DBSubnetGroupDescription: Subnet group for RDS
       SubnetIds: !Split
         - ','
-        - Fn::ImportValue: !Sub '${NetworkStackName}-FridayHITT-PublicSubnets'
+        - Fn::ImportValue: !Sub '${NetworkStackName}-FridayHITT-PrivateSubnets'
 
   Jumpbox:
     Type: 'AWS::EC2::Instance'

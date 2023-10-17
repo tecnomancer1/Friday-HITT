@@ -199,7 +199,7 @@ Outputs:
 
   JumpboxSecurityGroup:
     Description: 'Jumpbox security group'
-    Value: !Ref JumpboxSG
+    Value: !Ref JumpboxSecurityGroup
     Export:
       Name: !Sub '${AWS::StackName}-JumpboxSG'
 

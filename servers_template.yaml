@@ -12,7 +12,7 @@ Metadata:
           - DBInstanceType
       -
         Label:
-          default: Network Stack
+          default: NetworkStack
         Parameters:
           - NetworkStackName
 
@@ -96,15 +96,15 @@ Resources:
       DBSubnetGroupName: FridayHITTDBSubnetGroup
       DBSubnetGroupDescription: Subnet group for RDS
       SubnetIds:
-        - Fn::ImportValue: !Sub ''${AWS::StackName}-PrivateSubnet1'
-        - Fn::ImportValue: !Sub ''${AWS::StackName}-PrivateSubnet2'
+        - Fn::ImportValue: !Sub '${NetworkStackName}-PrivateSubnet1'
+        - Fn::ImportValue: !Sub '${NetworkStackName}-PrivateSubnet2'
 
   Jumpbox:
     Type: 'AWS::EC2::Instance'
     Properties:
       InstanceType: !Ref InstanceType
       SecurityGroupIds:
-        - Fn::ImportValue: !Sub '${AWS::StackName}-JumpboxSG'
+        - Fn::ImportValue: !Sub '${NetworkStackName}-JumpboxSG'
       SubnetId: !Ref PublicSubnet1Id
       KeyName: !Ref NewKeyPairName
       ImageId: !Ref LatestAmiId
@@ -125,7 +125,7 @@ Resources:
       InstanceType: !Ref InstanceType
       KeyName: !Ref NewKeyPairName
       SecurityGroups:
-        - Fn::ImportValue: !Sub ''${AWS::StackName}-WebSG'
+        - Fn::ImportValue: !Sub '${NetworkStackName}-WebSG'
       UserData:
         'Fn::Base64': !Sub |
           #!/bin/bash
@@ -144,10 +144,10 @@ Resources:
       MaxSize: 4
       DesiredCapacity: 2
       VPCZoneIdentifier:
-        - Fn::ImportValue: !Sub ''${AWS::StackName}-PublicSubnet1'
-        - Fn::ImportValue: !Sub ''${AWS::StackName}-PublicSubnet2'
+        - Fn::ImportValue: !Sub '${NetworkStackName}-PublicSubnet1'
+        - Fn::ImportValue: !Sub '${NetworkStackName}-PublicSubnet2'
       TargetGroupARNs:
-        - !Ref WebServerTG
+        - !Ref WebServerTargetGroup
       Tags:
         - Key: Name
           Value: !Sub '${AWS::StackName}-WebServer'
@@ -158,14 +158,14 @@ Resources:
     Properties:
       Name: !Sub '${AWS::StackName}-WebServerNLB'
       Subnets:
-        - Fn::ImportValue: !Sub ''${AWS::StackName}-PublicSubnet1'
-        - Fn::ImportValue: !Sub ''${AWS::StackName}-PublicSubnet2'
+        - Fn::ImportValue: !Sub '${NetworkStackName}-PublicSubnet1'
+        - Fn::ImportValue: !Sub '${NetworkStackName}-PublicSubnet2'
       Scheme: internet-facing
       LoadBalancerAttributes:
         - Key: load_balancing.cross_zone.enabled
           Value: 'true'
       SecurityGroups:
-        - Fn::ImportValue: !Sub ''${AWS::StackName}-WebSG'
+        - Fn::ImportValue: !Sub '${NetworkStackName}-WebSG'
       Tags:
         - Key: Name
           Value: !Sub '${AWS::StackName}-WebServerNLB'
@@ -201,7 +201,7 @@ Resources:
       MultiAZ: !Ref EnableMultiAZ
       DBSubnetGroupName: !Ref DBSubnetGroup
       VPCSecurityGroups:
-        - Fn::ImportValue: !Sub ''${AWS::StackName}-DatabaseSG'
+        - Fn::ImportValue: !Sub '${NetworkStackName}-DatabaseSG'
       Tags:
         - Key: Name
           Value: !Sub '${AWS::StackName}-DatabaseServer'

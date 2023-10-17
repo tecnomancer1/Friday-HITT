@@ -101,9 +101,9 @@ Resources:
     Properties:
       DBSubnetGroupName: FridayHITTDBSubnetGroup
       DBSubnetGroupDescription: Subnet group for RDS
-      SubnetIds: !Split
-        - ','
-        - Fn::ImportValue: !Sub '${NetworkStackName}-FridayHITT-PublicSubnets'
+      SubnetIds:
+        - Fn::ImportValue: !Sub '${NetworkStackName}-FridayHITT-PrivateSubnet1'
+        - Fn::ImportValue: !Sub '${NetworkStackName}-FridayHITT-PrivateSubnet2'
 
   Jumpbox:
     Type: 'AWS::EC2::Instance'
@@ -149,9 +149,9 @@ Resources:
       MinSize: 2
       MaxSize: 4
       DesiredCapacity: 2
-      VPCZoneIdentifier: !Split
-        - ','
-        - Fn::ImportValue: !Sub '${NetworkStackName}-FridayHITT-PublicSubnets'
+      VPCZoneIdentifier:
+        - Fn::ImportValue: !Sub '${NetworkStackName}-FridayHITT-PublicSubnet1'
+        - Fn::ImportValue: !Sub '${NetworkStackName}-FridayHITT-PublicSubnet2'
       TargetGroupARNs:
         - !Ref WebServerTargetGroup
       Tags:
@@ -163,9 +163,9 @@ Resources:
     Type: 'AWS::ElasticLoadBalancingV2::LoadBalancer'
     Properties:
       Name: !Sub '${AWS::StackName}-FridayHITT-WebServerNLB'
-      SubnetIds: !Split
-        - ','
-        - Fn::ImportValue: !Sub '${NetworkStackName}-FridayHITT-PublicSubnets'
+      SubnetIds:
+        - Fn::ImportValue: !Sub '${NetworkStackName}-FridayHITT-PublicSubnet1'
+        - Fn::ImportValue: !Sub '${NetworkStackName}-FridayHITT-PublicSubnet2'
       Scheme: internet-facing
       LoadBalancerAttributes:
         - Key: load_balancing.cross_zone.enabled

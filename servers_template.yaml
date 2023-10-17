@@ -106,7 +106,7 @@ Resources:
       SecurityGroupIds:
         - Fn::ImportValue: !Sub '${NetworkStackName}-JumpboxSG'
       SubnetId: !Ref PublicSubnet1Id
-      KeyName: !Ref NewKeyPairName
+      KeyName: !Ref NewKeyPair
       ImageId: !Ref LatestAmiId
       Tags:
         - Key: Name
@@ -123,7 +123,7 @@ Resources:
     Properties:
       ImageId: !Ref LatestAmiId
       InstanceType: !Ref InstanceType
-      KeyName: !Ref NewKeyPairName
+      KeyName: !Ref NewKeyPair
       SecurityGroups:
         - Fn::ImportValue: !Sub '${NetworkStackName}-WebSG'
       UserData:

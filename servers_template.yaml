@@ -88,7 +88,7 @@ Resources:
       KeyName: !Ref NewKeyPairName
       Tags:
         - Key: Name
-          Value: !Sub '${AWS::StackName}-FridayHITT-KeyPair'
+          Value: !Sub '${AWS::StackName}-KeyPair'
 
   DBSubnetGroup:
     Type: 'AWS::RDS::DBSubnetGroup'
@@ -96,21 +96,21 @@ Resources:
       DBSubnetGroupName: FridayHITTDBSubnetGroup
       DBSubnetGroupDescription: Subnet group for RDS
       SubnetIds:
-        - Fn::ImportValue: !Sub '${NetworkStackName}-FridayHITT-PrivateSubnet1'
-        - Fn::ImportValue: !Sub '${NetworkStackName}-FridayHITT-PrivateSubnet2'
+        - Fn::ImportValue: !Sub ''${AWS::StackName}-PrivateSubnet1'
+        - Fn::ImportValue: !Sub ''${AWS::StackName}-PrivateSubnet2'
 
   Jumpbox:
     Type: 'AWS::EC2::Instance'
     Properties:
       InstanceType: !Ref InstanceType
       SecurityGroupIds:
-        - Fn::ImportValue: !Sub '${NetworkStackName}-FridayHITT-JumpboxSecurityGroup'
+        - Fn::ImportValue: !Sub '${AWS::StackName}-JumpboxSG'
       SubnetId: !Ref PublicSubnet1Id
       KeyName: !Ref NewKeyPairName
       ImageId: !Ref LatestAmiId
       Tags:
         - Key: Name
-          Value: !Sub '${AWS::StackName}-FridayHITT-Jumpbox'
+          Value: !Sub '${AWS::StackName}-Jumpbox'
       UserData:
         'Fn::Base64': !Sub |
           #!/bin/bash
@@ -125,7 +125,7 @@ Resources:
       InstanceType: !Ref InstanceType
       KeyName: !Ref NewKeyPairName
       SecurityGroups:
-        - Fn::ImportValue: !Sub '${NetworkStackName}-FridayHITT-WebSecurityGroup'
+        - Fn::ImportValue: !Sub ''${AWS::StackName}-WebSG'
       UserData:
         'Fn::Base64': !Sub |
           #!/bin/bash
@@ -144,36 +144,36 @@ Resources:
       MaxSize: 4
       DesiredCapacity: 2
       VPCZoneIdentifier:
-        - Fn::ImportValue: !Sub '${NetworkStackName}-FridayHITT-PublicSubnet1'
-        - Fn::ImportValue: !Sub '${NetworkStackName}-FridayHITT-PublicSubnet2'
+        - Fn::ImportValue: !Sub ''${AWS::StackName}-PublicSubnet1'
+        - Fn::ImportValue: !Sub ''${AWS::StackName}-PublicSubnet2'
       TargetGroupARNs:
-        - !Ref WebServerTargetGroup
+        - !Ref WebServerTG
       Tags:
         - Key: Name
-          Value: !Sub '${AWS::StackName}-FridayHITT-WebServer'
+          Value: !Sub '${AWS::StackName}-WebServer'
           PropagateAtLaunch: true
 
   WebServerLoadBalancer:
     Type: 'AWS::ElasticLoadBalancingV2::LoadBalancer'
     Properties:
-      Name: !Sub '${AWS::StackName}-FridayHITT-WebServerNLB'
-      SubnetIds:
-        - Fn::ImportValue: !Sub '${NetworkStackName}-FridayHITT-PublicSubnet1'
-        - Fn::ImportValue: !Sub '${NetworkStackName}-FridayHITT-PublicSubnet2'
+      Name: !Sub '${AWS::StackName}-WebServerNLB'
+      Subnets:
+        - Fn::ImportValue: !Sub ''${AWS::StackName}-PublicSubnet1'
+        - Fn::ImportValue: !Sub ''${AWS::StackName}-PublicSubnet2'
       Scheme: internet-facing
       LoadBalancerAttributes:
         - Key: load_balancing.cross_zone.enabled
           Value: 'true'
       SecurityGroups:
-        - Fn::ImportValue: !Sub '${NetworkStackName}-FridayHITT-WebSecurityGroup'
+        - Fn::ImportValue: !Sub ''${AWS::StackName}-WebSG'
       Tags:
         - Key: Name
-          Value: !Sub '${AWS::StackName}-FridayHITT-WebServerNLB'
+          Value: !Sub '${AWS::StackName}-WebServerNLB'
 
   WebServerTargetGroup:
     Type: 'AWS::ElasticLoadBalancingV2::TargetGroup'
     Properties:
-      Name: !Sub '${AWS::StackName}-FridayHITT-WebServerTargetGroup'
+      Name: !Sub '${AWS::StackName}-WebServerTG'
       Port: 80
       Protocol: HTTP
       TargetType: instance
@@ -201,10 +201,10 @@ Resources:
       MultiAZ: !Ref EnableMultiAZ
       DBSubnetGroupName: !Ref DBSubnetGroup
       VPCSecurityGroups:
-        - Fn::ImportValue: !Sub '${NetworkStackName}-FridayHITT-DatabaseSecurityGroup'
+        - Fn::ImportValue: !Sub ''${AWS::StackName}-DatabaseSG'
       Tags:
         - Key: Name
-          Value: !Sub '${AWS::StackName}-FridayHITT-DatabaseServer'
+          Value: !Sub '${AWS::StackName}-DatabaseServer'
 
 Outputs:
   JumpboxPublicIPAddress:

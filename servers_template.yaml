@@ -205,9 +205,9 @@ Resources:
       MasterUsername: !Ref DBMasterUsername
       MasterUserPassword: !Ref DBMasterUserPassword
       MultiAZ: !Ref EnableMultiAZ
-      DBSubnetGroupName: 'Fn::Sub': FridayHITTDBSubnetGroup
+      DBSubnetGroupName: !Ref DBSubnetGroup
       VPCSecurityGroups:
-        - Fn::ImportValue: !Sub '${NetworkStackName}-FridayHITT-DbSecurityGroup'
+        - Fn::ImportValue: !Sub '${NetworkStackName}-FridayHITT-DatabaseSecurityGroup'
       Tags:
         - Key: Name
           Value: !Sub '${AWS::StackName}-FridayHITT-DatabaseServer'

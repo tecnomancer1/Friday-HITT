@@ -171,7 +171,7 @@ Resources:
 
 Outputs:
   VpcId:
-    Value: !Ref Vpc
+    Value: !Ref VPC
 
   PublicSubnet1:
     Description: 'Public subnet1'
@@ -203,15 +203,16 @@ Outputs:
     Export:
       Name: !Sub '${AWS::StackName}-FridayHITT-JumpboxSecurityGroup'
 
-  DbSecurityGroup:
+  DatabaseSecurityGroup:
     Description: 'Database servers security group'
-    Value: !Ref DbSecurityGroup
+    Value: !Ref DatabaseSecurityGroup
     Export:
-      Name: !Sub '${AWS::StackName}-FridayHITT-DbSecurityGroup'
+      Name: !Sub '${AWS::StackName}-FridayHITT-DatabaseSecurityGroup'
 
   WebSecurityGroup:
     Description: 'Webservers security group'
     Value: !Ref WebSecurityGroup
     Export:
       Name: !Sub '${AWS::StackName}-FridayHITT-WebSecurityGroup'
+
 

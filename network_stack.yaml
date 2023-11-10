@@ -31,7 +31,18 @@ Resources:
       KeyName: !Ref NewKeyPairName
       Tags:
         - Key: Name
-          Value: FridayHITT
+          Value: !Sub '${AWS::StackName}-DatabaseServer'
+        - Key: Environment
+          Value: Test
+        - Key: Owner
+          Value: Arek
+        - Key: Application
+          Value: Friday-HITT
+        - Key: CostCenter
+          Value: Marketing
+        - Key: Project
+          Value: ProjectA
+
   VPC:
     Type: 'AWS::EC2::VPC'
     Properties:
@@ -40,7 +51,18 @@ Resources:
       EnableDnsHostnames: true
       Tags:
         - Key: Name
-          Value: FridayHITT
+          Value: !Sub '${AWS::StackName}-DatabaseServer'
+        - Key: Environment
+          Value: Test
+        - Key: Owner
+          Value: Arek
+        - Key: Application
+          Value: Friday-HITT
+        - Key: CostCenter
+          Value: Marketing
+        - Key: Project
+          Value: ProjectA
+
     Metadata:
       'AWS::CloudFormation::Designer':
         id: f698a220-9e60-4b03-a59f-54872f53f679
@@ -49,7 +71,18 @@ Resources:
     Properties:
       Tags:
         - Key: Name
-          Value: FridayHITT
+          Value: !Sub '${AWS::StackName}-DatabaseServer'
+        - Key: Environment
+          Value: Test
+        - Key: Owner
+          Value: Arek
+        - Key: Application
+          Value: Friday-HITT
+        - Key: CostCenter
+          Value: Marketing
+        - Key: Project
+          Value: ProjectA
+
     Metadata:
       'AWS::CloudFormation::Designer':
         id: 497793d4-7f02-4707-a1b0-28162bcfe403
@@ -74,7 +107,18 @@ Resources:
         - !GetAZs ''
       Tags:
         - Key: Name
-          Value: FridayHITT
+          Value: !Sub '${AWS::StackName}-DatabaseServer'
+        - Key: Environment
+          Value: Test
+        - Key: Owner
+          Value: Arek
+        - Key: Application
+          Value: Friday-HITT
+        - Key: CostCenter
+          Value: Marketing
+        - Key: Project
+          Value: ProjectA
+
     Metadata:
       'AWS::CloudFormation::Designer':
         id: 3fbb3111-fb9c-4c63-9a79-4c3ec2d6744e
@@ -89,7 +133,17 @@ Resources:
         - !GetAZs ''
       Tags:
         - Key: Name
-          Value: FridayHITT
+          Value: !Sub '${AWS::StackName}-DatabaseServer'
+        - Key: Environment
+          Value: Test
+        - Key: Owner
+          Value: Arek
+        - Key: Application
+          Value: Friday-HITT
+        - Key: CostCenter
+          Value: Marketing
+        - Key: Project
+          Value: ProjectA
     Metadata:
       'AWS::CloudFormation::Designer':
         id: b80ae5e6-5388-4b8c-ac8a-ae20f8265e56
@@ -104,7 +158,17 @@ Resources:
         - !GetAZs ''
       Tags:
         - Key: Name
-          Value: FridayHITT
+          Value: !Sub '${AWS::StackName}-DatabaseServer'
+        - Key: Environment
+          Value: Test
+        - Key: Owner
+          Value: Arek
+        - Key: Application
+          Value: Friday-HITT
+        - Key: CostCenter
+          Value: Marketing
+        - Key: Project
+          Value: ProjectA
     Metadata:
       'AWS::CloudFormation::Designer':
         id: 96cd2065-993c-4a26-9ce0-259ae67d9f39
@@ -119,7 +183,17 @@ Resources:
         - !GetAZs ''
       Tags:
         - Key: Name
-          Value: FridayHITT
+          Value: !Sub '${AWS::StackName}-DatabaseServer'
+        - Key: Environment
+          Value: Test
+        - Key: Owner
+          Value: Arek
+        - Key: Application
+          Value: Friday-HITT
+        - Key: CostCenter
+          Value: Marketing
+        - Key: Project
+          Value: ProjectA
     Metadata:
       'AWS::CloudFormation::Designer':
         id: 4a93252c-108b-4b4f-8992-220baebd247d
@@ -144,7 +218,17 @@ Resources:
           ToPort: 80
       Tags:
         - Key: Name
-          Value: FridayHITT
+          Value: !Sub '${AWS::StackName}-DatabaseServer'
+        - Key: Environment
+          Value: Test
+        - Key: Owner
+          Value: Arek
+        - Key: Application
+          Value: Friday-HITT
+        - Key: CostCenter
+          Value: Marketing
+        - Key: Project
+          Value: ProjectA
     Metadata:
       'AWS::CloudFormation::Designer':
         id: 3050f62f-d98e-47ab-8cfe-0db6a2ef4928
@@ -161,7 +245,17 @@ Resources:
           ToPort: 3306
       Tags:
         - Key: Name
-          Value: FridayHITT
+          Value: !Sub '${AWS::StackName}-DatabaseServer'
+        - Key: Environment
+          Value: Test
+        - Key: Owner
+          Value: Arek
+        - Key: Application
+          Value: Friday-HITT
+        - Key: CostCenter
+          Value: Marketing
+        - Key: Project
+          Value: ProjectA
     Metadata:
       'AWS::CloudFormation::Designer':
         id: 9899a1e0-1c99-4135-bec5-d9a20ea1bca1
@@ -178,7 +272,17 @@ Resources:
       ImageId: !Ref LatestAmiId
       Tags:
         - Key: Name
-          Value: FridayHITT
+          Value: !Sub '${AWS::StackName}-DatabaseServer'
+        - Key: Environment
+          Value: Test
+        - Key: Owner
+          Value: Arek
+        - Key: Application
+          Value: Friday-HITT
+        - Key: CostCenter
+          Value: Marketing
+        - Key: Project
+          Value: ProjectA
       UserData:
         'Fn::Base64': !Sub >
           #!/bin/bash
@@ -211,7 +315,17 @@ Resources:
       ImageId: !Ref LatestAmiId
       Tags:
         - Key: Name
-          Value: FridayHITT
+          Value: !Sub '${AWS::StackName}-DatabaseServer'
+        - Key: Environment
+          Value: Test
+        - Key: Owner
+          Value: Arek
+        - Key: Application
+          Value: Friday-HITT
+        - Key: CostCenter
+          Value: Marketing
+        - Key: Project
+          Value: ProjectA
       UserData:
         'Fn::Base64': !Sub >
           #!/bash/bin
@@ -247,7 +361,17 @@ Resources:
         - !Ref DatabaseSecurityGroup
       Tags:
         - Key: Name
-          Value: FridayHITT
+          Value: !Sub '${AWS::StackName}-DatabaseServer'
+        - Key: Environment
+          Value: Test
+        - Key: Owner
+          Value: Arek
+        - Key: Application
+          Value: Friday-HITT
+        - Key: CostCenter
+          Value: Marketing
+        - Key: Project
+          Value: ProjectA
     Metadata:
       'AWS::CloudFormation::Designer':
         id: da949af5-73b0-43f7-8f01-21dc82c67b0c
@@ -258,7 +382,17 @@ Resources:
         Ref: VPC
       Tags:
         - Key: Name
-          Value: FridayHITT
+          Value: !Sub '${AWS::StackName}-DatabaseServer'
+        - Key: Environment
+          Value: Test
+        - Key: Owner
+          Value: Arek
+        - Key: Application
+          Value: Friday-HITT
+        - Key: CostCenter
+          Value: Marketing
+        - Key: Project
+          Value: ProjectA
     Metadata:
       'AWS::CloudFormation::Designer':
         id: 0a670957-d512-4a52-af72-65b7e4d1f082
@@ -269,7 +403,17 @@ Resources:
         Ref: VPC
       Tags:
         - Key: Name
-          Value: FridayHITT
+          Value: !Sub '${AWS::StackName}-DatabaseServer'
+        - Key: Environment
+          Value: Test
+        - Key: Owner
+          Value: Arek
+        - Key: Application
+          Value: Friday-HITT
+        - Key: CostCenter
+          Value: Marketing
+        - Key: Project
+          Value: ProjectA
     Metadata:
       'AWS::CloudFormation::Designer':
         id: a0a7a8cf-43ac-45cb-a92b-84ec03deab20
@@ -284,7 +428,17 @@ Resources:
         Ref: InternetGateway
       Tags:
         - Key: Name
-          Value: FridayHITT
+          Value: !Sub '${AWS::StackName}-DatabaseServer'
+        - Key: Environment
+          Value: Test
+        - Key: Owner
+          Value: Arek
+        - Key: Application
+          Value: Friday-HITT
+        - Key: CostCenter
+          Value: Marketing
+        - Key: Project
+          Value: ProjectA
     Metadata:
       'AWS::CloudFormation::Designer':
         id: 02913fbf-9170-493e-ae3d-6692575d4d4a
@@ -296,7 +450,17 @@ Resources:
       DestinationCidrBlock: 10.0.0.0/16
       Tags:
         - Key: Name
-          Value: FridayHITT
+          Value: !Sub '${AWS::StackName}-DatabaseServer'
+        - Key: Environment
+          Value: Test
+        - Key: Owner
+          Value: Arek
+        - Key: Application
+          Value: Friday-HITT
+        - Key: CostCenter
+          Value: Marketing
+        - Key: Project
+          Value: ProjectA
     Metadata:
       'AWS::CloudFormation::Designer':
         id: abb3585c-4618-4118-b292-8e227d13b2fd
@@ -309,7 +473,17 @@ Resources:
       NatGatewayId: nat-gateway-id
       Tags:
         - Key: Name
-          Value: FridayHITT
+          Value: !Sub '${AWS::StackName}-DatabaseServer'
+        - Key: Environment
+          Value: Test
+        - Key: Owner
+          Value: Arek
+        - Key: Application
+          Value: Friday-HITT
+        - Key: CostCenter
+          Value: Marketing
+        - Key: Project
+          Value: ProjectA
     Metadata:
       'AWS::CloudFormation::Designer':
         id: f31e4fa7-2294-45cb-8e23-0dbd6aa5c9bc

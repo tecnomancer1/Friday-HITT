@@ -18,6 +18,16 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub '${AWS::StackName}-VPC'
+        - Key: Environment
+          Value: Test
+        - Key: Owner
+          Value: Arek
+        - Key: Application
+          Value: Friday-HITT
+        - Key: CostCenter
+          Value: Marketing
+        - Key: Project
+          Value: ProjectA
 
   InternetGateway:
     Type: 'AWS::EC2::InternetGateway'
@@ -25,6 +35,16 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub '${AWS::StackName}-InternetGateway'
+        - Key: Environment
+          Value: Test
+        - Key: Owner
+          Value: Arek
+        - Key: Application
+          Value: Friday-HITT
+        - Key: CostCenter
+          Value: Marketing
+        - Key: Project
+          Value: ProjectA
 
   AttachGateway:
     Type: 'AWS::EC2::VPCGatewayAttachment'
@@ -46,6 +66,16 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub '${AWS::StackName}-PublicSubnet1'
+        - Key: Environment
+          Value: Test
+        - Key: Owner
+          Value: Arek
+        - Key: Application
+          Value: Friday-HITT
+        - Key: CostCenter
+          Value: Marketing
+        - Key: Project
+          Value: ProjectA
 
   PublicSubnet2:
     Type: 'AWS::EC2::Subnet'
@@ -57,6 +87,16 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub '${AWS::StackName}-PublicSubnet2'
+        - Key: Environment
+          Value: Test
+        - Key: Owner
+          Value: Arek
+        - Key: Application
+          Value: Friday-HITT
+        - Key: CostCenter
+          Value: Marketing
+        - Key: Project
+          Value: ProjectA
 
   PrivateSubnet1:
     Type: 'AWS::EC2::Subnet'
@@ -68,6 +108,16 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub '${AWS::StackName}-PrivateSubnet1'
+        - Key: Environment
+          Value: Test
+        - Key: Owner
+          Value: Arek
+        - Key: Application
+          Value: Friday-HITT
+        - Key: CostCenter
+          Value: Marketing
+        - Key: Project
+          Value: ProjectA
 
   PrivateSubnet2:
     Type: 'AWS::EC2::Subnet'
@@ -79,6 +129,16 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub '${AWS::StackName}-PrivateSubnet2'
+        - Key: Environment
+          Value: Test
+        - Key: Owner
+          Value: Arek
+        - Key: Application
+          Value: Friday-HITT
+        - Key: CostCenter
+          Value: Marketing
+        - Key: Project
+          Value: ProjectA
 
   # Security groups ---
   JumpboxSecurityGroup:
@@ -99,6 +159,16 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub '${AWS::StackName}-JumpboxSG'
+        - Key: Environment
+          Value: Test
+        - Key: Owner
+          Value: Arek
+        - Key: Application
+          Value: Friday-HITT
+        - Key: CostCenter
+          Value: Marketing
+        - Key: Project
+          Value: ProjectA
 
   WebSecurityGroup:
     Type: 'AWS::EC2::SecurityGroup'
@@ -122,6 +192,16 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub '${AWS::StackName}-WebSG'
+        - Key: Environment
+          Value: Test
+        - Key: Owner
+          Value: Arek
+        - Key: Application
+          Value: Friday-HITT
+        - Key: CostCenter
+          Value: Marketing
+        - Key: Project
+          Value: ProjectA
 
   DatabaseSecurityGroup:
     Type: 'AWS::EC2::SecurityGroup'
@@ -145,6 +225,16 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub '${AWS::StackName}-DatabaseSG'
+        - Key: Environment
+          Value: Test
+        - Key: Owner
+          Value: Arek
+        - Key: Application
+          Value: Friday-HITT
+        - Key: CostCenter
+          Value: Marketing
+        - Key: Project
+          Value: ProjectA
 
 
   # Route tables ---
@@ -156,6 +246,16 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub '${AWS::StackName}-PublicRouteTable'
+        - Key: Environment
+          Value: Test
+        - Key: Owner
+          Value: Arek
+        - Key: Application
+          Value: Friday-HITT
+        - Key: CostCenter
+          Value: Marketing
+        - Key: Project
+          Value: ProjectA
 
   PublicRouteTableAssociation1:
     Type: 'AWS::EC2::SubnetRouteTableAssociation'

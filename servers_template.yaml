@@ -89,6 +89,16 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub '${AWS::StackName}-KeyPair'
+        - Key: Environment
+          Value: Test
+        - Key: Owner
+          Value: Arek
+        - Key: Application
+          Value: Friday-HITT
+        - Key: CostCenter
+          Value: Marketing
+        - Key: Project
+          Value: ProjectA
 
   DBSubnetGroup:
     Type: 'AWS::RDS::DBSubnetGroup'
@@ -111,6 +121,16 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub '${AWS::StackName}-Jumpbox'
+        - Key: Environment
+          Value: Test
+        - Key: Owner
+          Value: Arek
+        - Key: Application
+          Value: Friday-HITT
+        - Key: CostCenter
+          Value: Marketing
+        - Key: Project
+          Value: ProjectA
       UserData:
         'Fn::Base64': !Sub |
           #!/bin/bash
@@ -151,6 +171,16 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub '${AWS::StackName}-WebServer'
+        - Key: Environment
+          Value: Test
+        - Key: Owner
+          Value: Arek
+        - Key: Application
+          Value: Friday-HITT
+        - Key: CostCenter
+          Value: Marketing
+        - Key: Project
+          Value: ProjectA
           PropagateAtLaunch: true
 
   WebServerLoadBalancer:
@@ -169,6 +199,16 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub '${AWS::StackName}-WebServerNLB'
+        - Key: Environment
+          Value: Test
+        - Key: Owner
+          Value: Arek
+        - Key: Application
+          Value: Friday-HITT
+        - Key: CostCenter
+          Value: Marketing
+        - Key: Project
+          Value: ProjectA
 
   WebServerTargetGroup:
     Type: 'AWS::ElasticLoadBalancingV2::TargetGroup'
@@ -205,6 +245,16 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub '${AWS::StackName}-DatabaseServer'
+        - Key: Environment
+          Value: Test
+        - Key: Owner
+          Value: Arek
+        - Key: Application
+          Value: Friday-HITT
+        - Key: CostCenter
+          Value: Marketing
+        - Key: Project
+          Value: ProjectA
 
 Outputs:
   JumpboxPublicIPAddress:

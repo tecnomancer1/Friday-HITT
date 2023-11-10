@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: 2010-09-09
-Description: FridayHITT Network Stack
+Description: FridayHITT Main Network Stack
 
 Parameters:
   VpcCidrBlock:
